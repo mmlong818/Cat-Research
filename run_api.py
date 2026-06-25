@@ -20,15 +20,8 @@ except Exception:
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT_DIR)
 
-# 检查环境变量
 from dotenv import load_dotenv
 load_dotenv()
-
-api_key = os.getenv("ZHIPU_API_KEY", "")
-if not api_key:
-    print("❌ 错误：请设置 ZHIPU_API_KEY 环境变量")
-    print("   在 .env 文件中添加：ZHIPU_API_KEY=your_key")
-    sys.exit(1)
 
 # 检查依赖
 try:

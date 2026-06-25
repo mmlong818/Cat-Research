@@ -20,13 +20,14 @@ if _PROJECT_ROOT not in sys.path:
 
 # Windows GBK 控制台 emoji 兼容
 import io as _io
-try:
-    if hasattr(sys.stdout, 'buffer'):
-        sys.stdout = _io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    if hasattr(sys.stderr, 'buffer'):
-        sys.stderr = _io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-except Exception:
-    pass
+if not getattr(sys, 'frozen', False) and not getattr(sys, '_cat_logging_configured', False):
+    try:
+        if hasattr(sys.stdout, 'buffer'):
+            sys.stdout = _io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+        if hasattr(sys.stderr, 'buffer'):
+            sys.stderr = _io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

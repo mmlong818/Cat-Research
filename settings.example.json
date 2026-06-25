@@ -1,6 +1,6 @@
 {
   "api_key": "your_zhipu_api_key_here",
   "base_url": "https://open.bigmodel.cn/api/paas/v4/",
-  "core_model": "glm-4.7",
-  "support_model": "glm-4.7-flash"
+  "core_model": "glm-5",
+  "support_model": "glm-4-flash"
 }

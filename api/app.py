@@ -17,10 +17,16 @@ from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# 项目根目录
+# 项目根目录（静态资源用 bundle 内路径；workspace 用户数据目录）
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_DIR = os.path.join(ROOT_DIR, "static")
-WORKSPACE_DIR = os.path.join(ROOT_DIR, "workspace")
+import sys as _sys
+if getattr(_sys, "frozen", False):
+    STATIC_DIR = os.path.join(getattr(_sys, "_MEIPASS", ROOT_DIR), "static")
+else:
+    STATIC_DIR = os.path.join(ROOT_DIR, "static")
+from api.paths import project_root as _project_root
+WORKSPACE_DIR = os.path.join(_project_root(), "workspace")
+os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
 app = FastAPI(
     title="多智能体研究系统 API",
@@ -43,8 +49,16 @@ app.add_middleware(
 )
 
 # 挂载静态文件
+# Vite 打包后资源在 /assets/、/vite.svg 等路径直接引用，需要在 SPA fallback 之前精确挂载
 if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    _assets_dir = os.path.join(STATIC_DIR, "assets")
+    if os.path.exists(_assets_dir):
+        app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
+
+# 注册路由
+from api.routes.config import router as config_router
+app.include_router(config_router)
 
 
 # ── 请求/响应模型 ────────────────────────────────────────────────────────────
@@ -65,8 +79,6 @@ class ConfigRequest(BaseModel):
 
 
 class SettingsRequest(BaseModel):
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
     core_model: Optional[str] = None
     support_model: Optional[str] = None
 
@@ -414,6 +426,24 @@ async def stop_task(task_id: str):
     return {"status": "stopping"}
 
 
+@app.post("/api/research/stop-all")
+async def stop_all_tasks():
+    """停止所有正在运行的任务"""
+    stopped = 0
+    for tid, st in list(_task_status.items()):
+        if st.get("status") in ("running", "paused"):
+            stop_ev = _task_stop_events.get(tid)
+            if stop_ev:
+                stop_ev.set()
+            pause_ev = _task_pause_events.get(tid)
+            if pause_ev:
+                pause_ev.set()
+            st["status"] = "stopped"
+            _put_event(tid, "error", {"message": "任务已被用户停止"})
+            stopped += 1
+    return {"stopped": stopped}
+
+
 @app.delete("/api/research/{task_id}")
 async def delete_task(task_id: str):
     """停止并删除任务（含工作区目录）"""
@@ -529,6 +559,31 @@ async def get_session_phases(session_id: str):
     workspace = _find_workspace(session_id)
     result = {}
 
+    # 会话元数据（含原始问题、轮次、评分、时间戳）
+    sess_file = os.path.join(workspace, "00_session.json")
+    if os.path.exists(sess_file):
+        try:
+            with open(sess_file, 'r', encoding='utf-8') as f:
+                meta = json.load(f)
+            result["session_meta"] = {
+                "question": meta.get("question", ""),
+                "total_cycles": meta.get("total_cycles", 0),
+                "final_score": meta.get("final_score"),
+                "score_history": meta.get("score_history", []),
+                "created_at": meta.get("created_at"),
+                "last_updated": meta.get("last_updated"),
+                "status": meta.get("status"),
+            }
+            result["question"] = meta.get("question", "")
+        except Exception:
+            pass
+
+    # 原始问题（备用：单独文件）
+    q_file = os.path.join(workspace, "01_question.txt")
+    if os.path.exists(q_file) and not result.get("question"):
+        with open(q_file, 'r', encoding='utf-8') as f:
+            result["question"] = f.read().strip()
+
     # 研究计划
     plan_file = os.path.join(workspace, "03_plan.json")
     if os.path.exists(plan_file):
@@ -575,6 +630,16 @@ async def get_session_phases(session_id: str):
                 result["confidence_report"] = json.load(f)
             except Exception:
                 pass
+
+    # 来源验证（提取 total_sources）
+    sv_file = os.path.join(workspace, "08_verification", "source_verification.json")
+    if os.path.exists(sv_file):
+        try:
+            with open(sv_file, 'r', encoding='utf-8') as f:
+                sv = json.load(f)
+            result["source_total"] = sv.get("total_sources", 0)
+        except Exception:
+            pass
 
     return result
 
@@ -804,7 +869,6 @@ async def health_check():
     return {
         "status": "ok",
         "model": config.ORCHESTRATOR_MODEL,
-        "api_key_set": bool(config.API_KEY),
         "active_tasks": len(_task_queues),
         "current_date": config.CURRENT_DATE_STR,
     }
@@ -812,14 +876,9 @@ async def health_check():
 
 @app.get("/api/settings")
 async def get_settings():
-    """获取当前 API 设置（key 脱敏显示）"""
+    """获取当前模型设置"""
     import config
-    key = config.API_KEY
-    masked = (key[:4] + '***' + key[-4:]) if len(key) > 8 else ('***' if key else '')
     return {
-        "api_key_set": bool(key),
-        "api_key_masked": masked,
-        "base_url": config.API_BASE_URL,
         "core_model": config.CORE_MODEL,
         "support_model": config.SUPPORT_MODEL,
     }
@@ -827,32 +886,12 @@ async def get_settings():
 
 @app.post("/api/settings")
 async def update_settings(request: SettingsRequest):
-    """
-    更新 API 设置并持久化到 settings.json。
-    立即对后续所有新任务生效（重启后也保留）。
-    """
+    """更新模型设置并持久化到 settings.json"""
     import config
     from config import save_settings
 
     try:
         changes = {}
-
-        # api_key：非空才更新，防止意外清空
-        if request.api_key is not None:
-            key = request.api_key.strip()
-            if key:
-                config.API_KEY = key
-                config.ZHIPU_API_KEY = key
-                config.ANTHROPIC_API_KEY = key
-                changes["api_key"] = key
-
-        # base_url：空则保持原值
-        if request.base_url is not None:
-            url = request.base_url.strip()
-            if url:
-                config.API_BASE_URL = url
-                config.ZHIPU_BASE_URL = url
-                changes["base_url"] = url
 
         if request.core_model is not None:
             m = request.core_model.strip()
@@ -885,18 +924,20 @@ async def update_settings(request: SettingsRequest):
 
 @app.get("/api/models")
 async def list_models():
-    """
-    从当前配置的 API 端点拉取可用模型列表（GET {base_url}/models）。
-    返回模型 id 列表，供前端下拉选择。
-    """
-    import config
-    from openai import OpenAI
-    if not config.API_KEY:
-        raise HTTPException(status_code=400, detail="请先配置 API Key")
-    try:
-        client = OpenAI(api_key=config.API_KEY, base_url=config.API_BASE_URL)
-        models_page = client.models.list()
-        ids = sorted(m.id for m in models_page.data)
-        return {"models": ids}
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"获取模型列表失败：{str(e)}")
+    """返回可用 Claude 模型列表"""
+    return {"models": ["claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5-20251001"]}
+
+
+@app.get("/{full_path:path}")
+async def spa_fallback(full_path: str):
+    """SPA catch-all：先尝试 STATIC_DIR 下的真实文件，否则返回 index.html"""
+    # 1) STATIC_DIR 下存在的真实文件（如 favicon.ico、vite.svg 等）
+    if full_path and ".." not in full_path:
+        candidate = os.path.join(STATIC_DIR, full_path)
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+    # 2) 兜底返回 index.html（让 React Router 处理）
+    index_file = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return JSONResponse({"error": "前端尚未构建"}, status_code=404)

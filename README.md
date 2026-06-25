@@ -153,8 +153,8 @@ cp settings.example.json settings.json
 {
   "api_key": "your_api_key_here",
   "base_url": "https://open.bigmodel.cn/api/paas/v4/",
-  "core_model": "glm-4.7",
-  "support_model": "glm-4.7-flash"
+  "core_model": "glm-5",
+  "support_model": "glm-4-flash"
 }
 ```
 
@@ -277,8 +277,8 @@ OPENAI_API_KEY=your_key         # 或 OpenAI API Key
 OPENAI_BASE_URL=https://...     # 自定义 Base URL
 
 # ── 模型选择 ─────────────────────────────────────────────────────
-CORE_MODEL=glm-4.7              # 核心模型（规划/研究/分析/写作）
-SUPPORT_MODEL=glm-4.7-flash     # 辅助模型（评审/验证/核查）
+CORE_MODEL=glm-5                # 核心模型（规划/研究/分析/写作）
+SUPPORT_MODEL=glm-4-flash       # 辅助模型（评审/验证/核查）
 
 # ── 研究质量参数 ──────────────────────────────────────────────────
 MAX_IMPROVEMENT_CYCLES=5        # 最多改进轮数（默认 5）
@@ -309,11 +309,14 @@ Cat-Research 兼容所有 OpenAI 接口标准的 API 服务：
 
 | 提供商 | Base URL | 推荐模型 |
 |--------|----------|----------|
-| 智谱 AI | `https://open.bigmodel.cn/api/paas/v4/` | glm-4.7, glm-4.7-flash |
-| OpenAI | `https://api.openai.com/v1` | gpt-4o, gpt-4o-mini |
+| 智谱 AI | `https://open.bigmodel.cn/api/paas/v4/` | glm-5, glm-5-turbo, glm-4-plus, glm-4-flash |
+| OpenAI | `https://api.openai.com/v1` | gpt-4.1, gpt-4.1-mini, o3, o4-mini |
 | DeepSeek | `https://api.deepseek.com/v1` | deepseek-chat, deepseek-reasoner |
-| Moonshot | `https://api.moonshot.cn/v1` | moonshot-v1-32k |
-| 本地 Ollama | `http://localhost:11434/v1` | qwen2.5, llama3 等 |
+| Moonshot (Kimi) | `https://api.moonshot.cn/v1` | kimi-k2, kimi-k2-thinking, kimi-k1.5 |
+| 阿里云百炼 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3-235b-a22b, qwen3-32b, qwen-plus, qwen-turbo |
+| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai/` | gemini-2.5-pro-preview, gemini-2.5-flash |
+| SiliconFlow | `https://api.siliconflow.cn/v1` | Qwen/Qwen3-32B, deepseek-ai/DeepSeek-V3 |
+| 本地 Ollama | `http://localhost:11434/v1` | llama4, qwen3:32b, gemma3:27b, deepseek-r1 等 |
 
 ---
 
@@ -415,8 +418,8 @@ cp settings.example.json settings.json
 {
   "api_key": "your_api_key_here",
   "base_url": "https://open.bigmodel.cn/api/paas/v4/",
-  "core_model": "glm-4.7",
-  "support_model": "glm-4.7-flash"
+  "core_model": "glm-5",
+  "support_model": "glm-4-flash"
 }
 ```
 
@@ -524,8 +527,8 @@ OPENAI_API_KEY=your_key
 OPENAI_BASE_URL=https://...
 
 # Model selection
-CORE_MODEL=glm-4.7              # Core model (planning / research / writing)
-SUPPORT_MODEL=glm-4.7-flash     # Support model (review / verification)
+CORE_MODEL=glm-5                # Core model (planning / research / writing)
+SUPPORT_MODEL=glm-4-flash       # Support model (review / verification)
 
 # Quality parameters
 MAX_IMPROVEMENT_CYCLES=5        # Maximum improvement rounds
@@ -545,11 +548,14 @@ Cat-Research works with any OpenAI-compatible API:
 
 | Provider | Base URL | Recommended Models |
 |----------|----------|--------------------|
-| Zhipu AI | `https://open.bigmodel.cn/api/paas/v4/` | glm-4.7, glm-4.7-flash |
-| OpenAI | `https://api.openai.com/v1` | gpt-4o, gpt-4o-mini |
-| DeepSeek | `https://api.deepseek.com/v1` | deepseek-chat |
-| Moonshot | `https://api.moonshot.cn/v1` | moonshot-v1-32k |
-| Local (Ollama) | `http://localhost:11434/v1` | qwen2.5, llama3, etc. |
+| Zhipu AI | `https://open.bigmodel.cn/api/paas/v4/` | glm-5, glm-5-turbo, glm-4-plus, glm-4-flash |
+| OpenAI | `https://api.openai.com/v1` | gpt-4.1, gpt-4.1-mini, o3, o4-mini |
+| DeepSeek | `https://api.deepseek.com/v1` | deepseek-chat, deepseek-reasoner |
+| Moonshot (Kimi) | `https://api.moonshot.cn/v1` | kimi-k2, kimi-k2-thinking, kimi-k1.5 |
+| Alibaba (Qwen) | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3-235b-a22b, qwen3-32b, qwen-plus, qwen-turbo |
+| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai/` | gemini-2.5-pro-preview, gemini-2.5-flash |
+| SiliconFlow | `https://api.siliconflow.cn/v1` | Qwen/Qwen3-32B, deepseek-ai/DeepSeek-V3 |
+| Local (Ollama) | `http://localhost:11434/v1` | llama4, qwen3:32b, gemma3:27b, deepseek-r1, etc. |
 
 ---
 
