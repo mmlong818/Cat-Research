@@ -30,7 +30,7 @@ def _zhipu_search(query: str, max_results: int = 8,
     }
 
     resp = requests.post(
-        "https://open.bigmodel.cn/api/paas/v4/tools/web-search",
+        "https://open.bigmodel.cn/api/paas/v4/web_search",
         headers=headers,
         json=payload,
         timeout=15

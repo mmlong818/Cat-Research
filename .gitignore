@@ -1,7 +1,16 @@
 # 敏感配置（包含 API Key，不可提交）
 .env
 settings.json
+user_config.json
 .claude/settings.local.json
+
+# 构建产物
+build-dist/
+
+# Node / 前端依赖与产物
+node_modules/
+frontend/node_modules/
+frontend/dist/
 
 # Python
 __pycache__/

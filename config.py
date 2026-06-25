@@ -1,5 +1,5 @@
 """
-猫叔的深思熟虑 - 全局配置
+猫叔的深思熟虑 - 全局配置（Claude CLI 模式）
 """
 import os
 import json
@@ -81,8 +81,24 @@ print(f"[init] Current date : {CURRENT_DATE_STR}", flush=True)
 print(f"[init] 3-month cutoff: {DATE_3M_AGO_STR}", flush=True)
 print(f"[init] 6-month cutoff: {DATE_6M_AGO_STR}", flush=True)
 
-# === 持久化设置文件（用户通过 UI 设置的 API Key 等保存于此）===
-_SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+# === 持久化设置文件（用户通过 UI 设置的模型等保存于此）===
+def _resolve_user_dir() -> str:
+    """打包模式用 %APPDATA%/cat-research，开发模式用项目根目录"""
+    import sys as _sys
+    if getattr(_sys, "frozen", False):
+        if _sys.platform == "win32":
+            base = os.environ.get("APPDATA") or os.path.expanduser("~")
+        elif _sys.platform == "darwin":
+            base = os.path.expanduser("~/Library/Application Support")
+        else:
+            base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+        d = os.path.join(base, "cat-research")
+        os.makedirs(d, exist_ok=True)
+        return d
+    return os.path.dirname(__file__)
+
+_USER_DIR = _resolve_user_dir()
+_SETTINGS_FILE = os.path.join(_USER_DIR, "settings.json")
 
 def _load_settings_file() -> dict:
     """加载 settings.json，不存在则返回空 dict"""
@@ -101,29 +117,27 @@ def save_settings(data: dict):
     with open(_SETTINGS_FILE, 'w', encoding='utf-8') as f:
         json.dump(existing, f, ensure_ascii=False, indent=2)
 
-# 加载持久化设置（优先级：环境变量 > settings.json > 空）
+# 加载持久化设置
 _saved = _load_settings_file()
 
-# === OpenAI 兼容 API 配置 ===
-# 兼容任何 OpenAI-compatible 接口（OpenAI / 智谱 / DeepSeek / 本地 Ollama 等）
-API_KEY  = (os.environ.get("ZHIPU_API_KEY", "")
-            or os.environ.get("OPENAI_API_KEY", "")
-            or _saved.get("api_key", ""))
+# === OpenAI 兼容 API 配置（智谱 GLM）===
+# 供 BaseAgent / ClarifierAgent 的 OpenAI 客户端使用
+API_KEY = (os.environ.get("ZHIPU_API_KEY", "")
+           or os.environ.get("OPENAI_API_KEY", "")
+           or _saved.get("api_key", ""))
 API_BASE_URL = (os.environ.get("ZHIPU_BASE_URL", "")
                 or os.environ.get("OPENAI_BASE_URL", "")
                 or _saved.get("base_url", "")
                 or "https://open.bigmodel.cn/api/paas/v4/")
-
-# 向后兼容别名
-ZHIPU_API_KEY  = API_KEY
+# 向后兼容别名（web_search.py 用 ZHIPU_API_KEY 调智谱搜索 API）
+ZHIPU_API_KEY = API_KEY
 ZHIPU_BASE_URL = API_BASE_URL
-ANTHROPIC_API_KEY = API_KEY
 
-# === 模型配置 ===
-# 【核心模型】负责推理、规划、研究、分析、写作——对质量影响最大
+# === 模型配置（Claude CLI）===
+# 【核心模型】负责推理、规划、研究、分析、写作
 CORE_MODEL = (os.environ.get("CORE_MODEL", "")
               or _saved.get("core_model", "")
-              or "glm-4.7")
+              or "claude-sonnet-4-6")
 ORCHESTRATOR_MODEL       = CORE_MODEL
 PLANNER_MODEL            = CORE_MODEL
 RESEARCHER_MODEL         = CORE_MODEL
@@ -133,14 +147,15 @@ WRITER_MODEL             = CORE_MODEL
 # 【辅助模型】负责评审、来源验证、事实核查、结论验证
 SUPPORT_MODEL = (os.environ.get("SUPPORT_MODEL", "")
                  or _saved.get("support_model", "")
-                 or "glm-4.7-flash")
+                 or "claude-haiku-4-5-20251001")
 CRITIC_MODEL                 = SUPPORT_MODEL
 SOURCE_VERIFIER_MODEL        = SUPPORT_MODEL
 FACT_CHECKER_MODEL           = SUPPORT_MODEL
 CONCLUSION_VALIDATOR_MODEL   = SUPPORT_MODEL
 
 # === 工作空间配置 ===
-WORKSPACE_DIR = os.path.join(os.path.dirname(__file__), "workspace")
+WORKSPACE_DIR = os.path.join(_USER_DIR, "workspace")
+os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
 # === 研究配置 ===
 MAX_IMPROVEMENT_CYCLES = 5         # 最多改进循环次数
@@ -155,13 +170,16 @@ SHOW_AGENT_THOUGHTS = True         # 是否显示智能体工作细节
 SEPARATOR = "=" * 70
 
 # === 上下文压缩配置 ===
-# 单个智能体对话超过此字符数时自动压缩（约 30k token，每字符约 4 字节）
 COMPRESS_THRESHOLD_CHARS = int(os.environ.get("COMPRESS_THRESHOLD_CHARS", "100000"))
-# 压缩时保留最近 N 条消息（不纳入压缩，保持 reasoning_content 链完整）
 COMPRESS_KEEP_RECENT = int(os.environ.get("COMPRESS_KEEP_RECENT", "6"))
 
+# === 收割模式（穷举枚举型研究）配置 ===
+# 枚举型任务（"汇总所有/全部事件/清单"等）时，researcher 切换为收割循环：
+# 逐页抓取 → LLM 抽取结构化事件 → 去重累加进台账 → 循环至枯竭/达预算
+HARVEST_MAX_PAGES = int(os.environ.get("HARVEST_MAX_PAGES", "50"))          # 每轮最多抓取页数
+HARVEST_DRY_STREAK = int(os.environ.get("HARVEST_DRY_STREAK", "8"))         # 连续 N 页无新事件则停
+HARVEST_RESULTS_PER_QUERY = int(os.environ.get("HARVEST_RESULTS_PER_QUERY", "12"))  # 每查询取多少结果
+
 # === 子进程隔离配置 ===
-# 是否对长运行阶段启用独立子进程（进程隔离、上下文独立）
 USE_SUBPROCESS = os.environ.get("USE_SUBPROCESS", "false").lower() == "true"
-# 哪些智能体使用子进程（逗号分隔，空字符串=全部）
 SUBPROCESS_AGENTS = [a.strip() for a in os.environ.get("SUBPROCESS_AGENTS", "researcher,analyst,writer").split(",") if a.strip()]

@@ -14,15 +14,16 @@ import tempfile
 from datetime import datetime
 from typing import Optional, Callable
 
-# Windows GBK 控制台 emoji 兼容：强制 stdout/stderr 使用 UTF-8
+# Windows GBK 控制台 emoji 兼容：仅非 frozen / 未被 launcher 重定向时包装
 import io as _io
-try:
-    if hasattr(sys.stdout, 'buffer'):
-        sys.stdout = _io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    if hasattr(sys.stderr, 'buffer'):
-        sys.stderr = _io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-except Exception:
-    pass
+if not getattr(sys, 'frozen', False) and not getattr(sys, '_cat_logging_configured', False):
+    try:
+        if hasattr(sys.stdout, 'buffer'):
+            sys.stdout = _io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+        if hasattr(sys.stderr, 'buffer'):
+            sys.stderr = _io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
 
 import config as _config
 from config import (
@@ -72,6 +73,7 @@ class ResearchOrchestrator:
         self._user_messages = []          # 用户中途注入的消息列表
         self._pause_event = None          # threading.Event，None=不暂停，clear=暂停中
         self._stop_event = None           # threading.Event，set=立即停止
+        self._token_usage = {}            # 各 Agent token 累计 {agent_name: {input, output}}
 
         # 初始化所有智能体
         print("\n🔧 正在初始化智能体...", flush=True)
@@ -94,6 +96,12 @@ class ResearchOrchestrator:
 
     def _emit(self, event_type: str, data: dict):
         """发送进度事件（API模式）"""
+        if event_type == "token_usage":
+            agent = data.get("agent", "unknown")
+            if agent not in self._token_usage:
+                self._token_usage[agent] = {"input": 0, "output": 0}
+            self._token_usage[agent]["input"] += data.get("total_input", 0)
+            self._token_usage[agent]["output"] += data.get("total_output", 0)
         if self.progress_callback:
             self.progress_callback(event_type, data)
 
@@ -329,66 +337,17 @@ class ResearchOrchestrator:
         self._emit("status", {"status": status, **(extra or {})})
 
     def _ask_clarification(self, question: str) -> str:
-        """使用智谱 GLM API 生成澄清问题，然后请求用户确认"""
-        from openai import OpenAI
-        from config import ZHIPU_API_KEY, ZHIPU_BASE_URL
-
-        client = OpenAI(api_key=ZHIPU_API_KEY, base_url=ZHIPU_BASE_URL)
-
-        print(f"\n{SEPARATOR}", flush=True)
-        print("🧠 正在分析您的问题...", flush=True)
-
-        response = client.chat.completions.create(
-            model=ORCHESTRATOR_MODEL,
-            max_tokens=2048,
-            temperature=0.3,
-            top_p=0.85,
-            extra_body={"thinking": {"type": "enabled"}},
-            messages=[{
-                "role": "user",
-                "content": f"""分析这个研究问题并生成2-3个澄清问题：
-
-问题：{question}
-
-请直接用中文输出，格式：
-【问题理解】：你理解这个问题的方向是...
-【建议研究范围】：...
-【澄清问题1】：...
-【澄清问题2】：...
-（可选）【澄清问题3】：...
-
-保持简洁，每项不超过2行。"""
-            }]
-        )
-
-        msg = response.choices[0].message if response.choices else None
-        analysis = (msg.content or getattr(msg, "reasoning_content", "") or "") if msg else ""
-        print(f"\n{analysis}", flush=True)
-        self._emit("clarification", {"analysis": analysis})
-
-        # API 模式下跳过交互式输入
-        if self.progress_callback:
-            clarified = question
-        else:
-            print(f"\n{'─'*70}", flush=True)
-            print("💬 请回答上述问题（或直接按回车使用默认理解）：", flush=True)
-            try:
-                user_input = input("> ").strip()
-            except (EOFError, KeyboardInterrupt):
-                user_input = ""
-
-            clarified = f"{question}\n\n补充说明：{user_input}" if user_input else question
-
+        """澄清研究问题（API 模式下已由 ClarifierAgent 完成，直接返回）"""
         clarification_data = {
             "original_question": question,
-            "analysis": analysis,
-            "final_question": clarified
+            "analysis": "",
+            "final_question": question
         }
         write_json(
             os.path.join(self.workspace, "04_clarification", "clarification.json"),
             clarification_data
         )
-        return clarified
+        return question
 
     def _display_review_summary(self, review: dict, cycle: int):
         """显示评审结果摘要"""
@@ -919,13 +878,28 @@ class ResearchOrchestrator:
 
 *本报告由多智能体研究系统自动生成，包含来源验证、事实核查和结论验证流程*
 """
-            write_file(final_file, content + conf_appendix)
+            # 枚举型任务：从事件台账确定性生成完整附录（事件全表 + 投资方汇总），保证报告不丢条目
+            try:
+                from agents.researcher import build_ledger_appendix
+                ledger_appendix = build_ledger_appendix(self.workspace)
+            except Exception as _e:
+                print(f"  [警告] 生成台账附录失败: {str(_e)[:80]}", flush=True)
+                ledger_appendix = ""
+            write_file(final_file, content + conf_appendix + ledger_appendix)
 
+        total_input = sum(v["input"] for v in self._token_usage.values())
+        total_output = sum(v["output"] for v in self._token_usage.values())
         self._update_status("completed", {
             "total_cycles": total_done,
             "final_score": final_score,
             "score_history": all_scores,
-            "final_report": final_file
+            "final_report": final_file,
+            "token_usage": {
+                "total_input": total_input,
+                "total_output": total_output,
+                "total": total_input + total_output,
+                "by_agent": self._token_usage,
+            }
         })
         self._log(f"研究完成，共 {total_done} 轮改进，最终分: {final_score:.1f}")
 
