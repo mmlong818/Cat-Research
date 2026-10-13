@@ -21,6 +21,8 @@
 
 **Cat-Research** 是一个基于多智能体协作的深度研究系统。它将一个研究问题自动分解为多个专业阶段，由职责各异的 AI 智能体协同完成，最终交付一份经过来源权威性验证、事实交叉核查、结论逻辑验证的高质量研究报告。
 
+> 当前版本基于 Claude Agent SDK。早期的智谱 GLM / OpenAI 兼容版本保留在 tag [`v1-glm`](https://github.com/mmlong818/Cat-Research/tree/v1-glm)。
+
 不同于普通的 AI 问答，Cat-Research 会：
 
 - 🔍 **主动搜索**：借助 Claude Code 内置的 WebSearch / WebFetch 工具实时获取并抓取网络信息，自动按时效过滤（优先近 3 个月）
@@ -92,7 +94,7 @@
 ### 项目结构
 
 ```
-cat-deep-research/
+Cat-Research/
 ├── main.py                  # 命令行入口
 ├── run_api.py               # Web UI + API 服务入口
 ├── orchestrator.py          # 研究编排器（主流程控制）
@@ -154,8 +156,8 @@ cat-deep-research/
 #### 1. 克隆项目
 
 ```bash
-git clone https://github.com/mmlong818/cat-deep-research.git
-cd cat-deep-research
+git clone https://github.com/mmlong818/Cat-Research.git
+cd Cat-Research
 ```
 
 #### 2. 安装依赖
@@ -386,6 +388,8 @@ NO_GAIN_PATIENCE = 1          # 连续多少轮评审分未超过最优分即停
 
 **Cat-Research** is a multi-agent collaborative deep research system. It automatically decomposes a research question into specialized stages, each handled by a dedicated AI agent, ultimately producing a high-quality research report with source credibility verification, cross-referenced fact-checking, and validated conclusions.
 
+> The current version runs on the Claude Agent SDK. The earlier GLM / OpenAI-compatible version is kept at tag [`v1-glm`](https://github.com/mmlong818/Cat-Research/tree/v1-glm).
+
 Unlike simple AI Q&A tools, Cat-Research will:
 
 - 🔍 **Actively search** using Claude Code's built-in WebSearch / WebFetch tools, with automatic recency filtering (prioritizes last 3 months)
@@ -451,8 +455,8 @@ Final Report (09_final.md, best draft without citation violations) + Confidence 
 #### 1. Clone
 
 ```bash
-git clone https://github.com/mmlong818/cat-deep-research.git
-cd cat-deep-research
+git clone https://github.com/mmlong818/Cat-Research.git
+cd Cat-Research
 ```
 
 #### 2. Install dependencies
@@ -686,6 +690,6 @@ MIT License · Free to use, modify, and distribute.
 
 <div align="center">
 
-Made with ❤️ · [Issues](https://github.com/mmlong818/cat-deep-research/issues) · [Discussions](https://github.com/mmlong818/cat-deep-research/discussions)
+Made with ❤️ · [Issues](https://github.com/mmlong818/Cat-Research/issues) · [Discussions](https://github.com/mmlong818/Cat-Research/discussions)
 
 </div>
