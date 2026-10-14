@@ -125,7 +125,9 @@ def read_reviews(workspace: str) -> list:
     rounds = []
     for name in os.listdir(folder):
         m = REVIEW_FILE.fullmatch(name)
-        data = _read_meta(os.path.join(folder, name)) if m else {}
+        if not m:
+            continue
+        data = _read_meta(os.path.join(folder, name))
         if data:
             rounds.append((int(m.group(1)), data))
     return [{"cycle": data.get("cycle", n), "scores": data.get("scores") or {},
