@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { Icon } from "../../components/ui/Icon";
 import { Stamp } from "../../components/ui/Stamp";
-import { f2, minutes, plainQuestion, usd } from "../../lib/format";
+import { f2, minutes, plainQuestion } from "../../lib/format";
 import { useT, type TKey } from "../../i18n";
 import { N, rich } from "../../i18n/rich";
 import type { Dossier } from "./useDossier";
@@ -15,10 +15,9 @@ import { tabHref, type Tab } from "./DossierChrome";
 function Lede({ d, x }: { d: Dossier; x: Derived }) {
   const { t } = useT();
   const elapsed = d.entry?.elapsed_seconds;
-  const cost = d.entry?.cost_usd ?? d.usage?.cost_usd;
   const L = d.ledger?.counts;
   const parts: ReactNode[] = [];
-  if (elapsed != null && cost != null) parts.push(rich(t("dossier.lede.effort"), { min: <N>{minutes(elapsed)}</N>, cost: <N>{usd(cost)}</N> }));
+  if (elapsed != null) parts.push(rich(t("dossier.lede.effort"), { min: <N>{minutes(elapsed)}</N> }));
   if (L) {
     const work = { s: <N>{L.sources}</N>, c: <N>{L.claims}</N>, x: <N>{L.contradictions}</N>, q: <N>{d.queries}</N> };
     parts.push(rich(t(d.queries != null ? "dossier.lede.work" : "dossier.lede.workNoQueries"), work));

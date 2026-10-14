@@ -6,12 +6,12 @@ import os
 from fastapi import HTTPException
 
 from llm import keys
-from llm.models import MODELS
-from llm.profiles import PROFILES, Profile, default_profile, make_profile
+from llm.models import COMPAT_PREFIX, MODELS
+from llm.profiles import PROFILES, Profile, default_profile, known_provider, make_profile
 
 
-def missing_key_detail(label: str) -> str:
-    return f"请先在设置中填写 {label} 的 API Key"
+def missing_setup_detail(items: list[str]) -> str:
+    return "请先在设置中填写 " + "、".join(items)
 
 
 def validate_profile(provider: str, core: str | None = None, support: str | None = None,
@@ -24,7 +24,7 @@ def validate_profile(provider: str, core: str | None = None, support: str | None
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     for model in (core, support):
-        if model and model not in MODELS:
+        if model and model not in MODELS and not model.startswith(COMPAT_PREFIX):  # compat: 模型名由用户的端点决定
             raise HTTPException(status_code=400, detail=f"模型 {model} 不在模型注册表中（已注册：{', '.join(MODELS)}）")
     return profile
 
@@ -33,7 +33,7 @@ def resolve_profile(provider: str | None = None, core: str | None = None, suppor
     """本次任务/调用使用的配置档：不传 provider 沿用设置里的默认提供方（及其模型）；
     换提供方时核心/辅助模型取该家默认，除非请求显式指定。该提供方缺 key 时 400。"""
     saved = default_profile()
-    if not (provider or core or support) and saved.provider in PROFILES:
+    if not (provider or core or support) and known_provider(saved.provider):
         return ensure_key(saved)  # 原样使用默认配置档（含用 CORE_MODEL/SUPPORT_MODEL 环境变量配出的跨提供方组合）
     target = provider or saved.provider
     profile = validate_profile(target, core, support, fill=saved if target == saved.provider else None)
@@ -41,10 +41,10 @@ def resolve_profile(provider: str | None = None, core: str | None = None, suppor
 
 
 def ensure_key(profile: Profile) -> Profile:
-    """该配置档的提供方需要 key 而没配置时 400。"""
-    label = keys.missing_key_label(profile.provider)
-    if label:
-        raise HTTPException(status_code=400, detail=missing_key_detail(label))
+    """该配置档的提供方（及联网搜索后端）缺 key、兼容端点缺 Base URL 时 400，并列出具体缺项。"""
+    items = keys.missing_requirements(profile.provider)
+    if items:
+        raise HTTPException(status_code=400, detail=missing_setup_detail(items))
     return profile
 
 

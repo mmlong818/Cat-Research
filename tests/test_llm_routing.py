@@ -11,7 +11,7 @@ SCHEMA = {"type": "object", "properties": {"n": {"type": "integer"}}, "required"
 
 
 def _result(data=None, text="ok"):
-    return LLMResult(text=text, data=data, cost_usd=0.0, duration_ms=1, num_turns=1, session_id="")
+    return LLMResult(text=text, data=data, duration_ms=1, num_turns=1, session_id="")
 
 
 class FakeProvider:

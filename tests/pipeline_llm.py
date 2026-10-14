@@ -63,7 +63,7 @@ def normalize(text: str) -> str:
 
 
 def _ok(data=None, text=""):
-    return LLMResult(text=text, data=data, cost_usd=0.0, duration_ms=0, num_turns=1, session_id="s", model_usage={})
+    return LLMResult(text=text, data=data, duration_ms=0, num_turns=1, session_id="s", model_usage={})
 
 
 def _number(pattern: str, prompt: str, default: int = 0) -> int:

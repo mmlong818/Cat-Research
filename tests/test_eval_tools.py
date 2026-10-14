@@ -45,7 +45,7 @@ class JudgePairTests(unittest.TestCase):
     def test_scores_are_mapped_back_to_a_and_b_in_both_orders(self):
         def fake_call(req):
             x_better = {f"X_{d}": 9 for d in judge.DIMS} | {f"Y_{d}": 7 for d in judge.DIMS}
-            return SimpleNamespace(data={**x_better, "winner": "X", "reason": "r"}, cost_usd=0.1)
+            return SimpleNamespace(data={**x_better, "winner": "X", "reason": "r"})
 
         with mock.patch.object(judge, "call", fake_call):
             ab, ba = judge.judge_pair("q", "A 文本", "B 文本")

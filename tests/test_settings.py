@@ -22,7 +22,8 @@ from tests import MemoryKeyring
 HEADERS = {security.TOKEN_HEADER: security.TOKEN}
 OPENAI_KEY = "sk-openai-SECRET-1234567890abcd"
 ZHIPU_KEY = "zhipu-SECRET-0987654321.wxyz"
-ENV_NAMES = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ZHIPU_API_KEY")
+ENV_NAMES = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "ZHIPU_API_KEY", "COMPAT_API_KEY", "COMPAT_BASE_URL",
+             "BOCHA_API_KEY", "BOCHA_BASE_URL", "TAVILY_API_KEY", "SEARCH_BACKEND")
 
 
 class SettingsCase(unittest.TestCase):
@@ -59,16 +60,16 @@ class SettingsCase(unittest.TestCase):
 
 
 class SettingsReadTests(SettingsCase):
-    def test_default_profile_and_all_three_providers_are_listed(self):
+    def test_default_profile_and_all_providers_are_listed(self):
         data = self.get()
         self.assertEqual(data["default_profile"],
                          {"provider": "claude", "core": "claude-opus-5-5", "support": "claude-sonnet-5-5"})
-        self.assertEqual(list(data["providers"]), ["claude", "openai", "zhipu"])
+        self.assertEqual(list(data["providers"]), ["claude", "openai", "zhipu", "compat"])
 
     def test_claude_needs_no_key_but_others_do(self):
         providers = self.get()["providers"]
         self.assertEqual((providers["claude"]["needs_key"], providers["claude"]["available"]), (False, True))
-        for name in ("openai", "zhipu"):
+        for name in ("openai", "zhipu", "compat"):
             p = providers[name]
             self.assertEqual((p["needs_key"], p["has_key"], p["available"], p["key_preview"], p["key_source"]),
                              (True, False, False, "", ""), name)
@@ -76,12 +77,12 @@ class SettingsReadTests(SettingsCase):
     def test_models_come_from_the_capability_table_per_provider(self):
         providers = self.get()["providers"]
         for name, p in providers.items():
+            if name == "compat":
+                continue  # 兼容端点的模型来自用户配置，见 test_compat_settings
             self.assertEqual([m["id"] for m in p["models"]], [i for i, s in MODELS.items() if s.provider == name])
             self.assertEqual(p["defaults"], {"core": PROFILES[name].core, "support": PROFILES[name].support})
         by_id = {m["id"]: m for m in providers["openai"]["models"]}
-        self.assertEqual((by_id["gpt-6-luna"]["tier"], by_id["gpt-6.1-sol"]["tier"], by_id["gpt-6-astra"]["tier"]),
-                         ("low", "mid", "high"))
-        self.assertEqual((by_id["gpt-6.1-sol"]["input_price"], by_id["gpt-6.1-sol"]["output_price"]), (2.0, 10.0))
+        self.assertEqual(set(by_id["gpt-6.1-sol"]), {"id", "context"})  # 不再带价格与价格档
 
     def test_models_endpoint_is_grouped_by_provider(self):
         res = self.client.get("/api/models", headers=HEADERS)

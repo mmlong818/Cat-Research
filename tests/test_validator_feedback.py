@@ -68,7 +68,7 @@ class WriterPromptTests(unittest.TestCase):
 
     def fake_call(self, req):
         self.prompts.append(req.prompt)
-        return LLMResult(text="# 新报告", data=None, cost_usd=0.0, duration_ms=0, num_turns=1, session_id="s",
+        return LLMResult(text="# 新报告", data=None, duration_ms=0, num_turns=1, session_id="s",
                          model_usage={})
 
     def rewrite(self, **kw) -> str:

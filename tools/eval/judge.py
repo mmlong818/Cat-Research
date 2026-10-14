@@ -96,8 +96,7 @@ def judge_pair(question: str, a: str, b: str) -> list:
         side = {"X": order[0], "Y": order[1]}
         scores = {side[s]: {k: d[f"{s}_{k}"] for k in DIMS} for s in ("X", "Y")}
         winner = "tie" if d["winner"] == "tie" else side[d["winner"]]
-        out.append({"order": order, "scores": scores, "winner": winner, "reason": d["reason"],
-                    "cost_usd": r.cost_usd})
+        out.append({"order": order, "scores": scores, "winner": winner, "reason": d["reason"]})
     return out
 
 
@@ -121,9 +120,9 @@ def check_claims(claims: list) -> list:
     out = []
     for c, r in zip(claims, call_many(reqs, max_concurrency=3), strict=True):
         if isinstance(r, LLMError):
-            out.append({"claim": c, "verdict": "error", "evidence_url": "", "note": str(r), "cost_usd": 0.0})
+            out.append({"claim": c, "verdict": "error", "evidence_url": "", "note": str(r)})
         else:
-            out.append({"claim": c, **r.data, "cost_usd": r.cost_usd})
+            out.append({"claim": c, **r.data})
     return out
 
 

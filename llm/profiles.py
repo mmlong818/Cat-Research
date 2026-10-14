@@ -35,12 +35,28 @@ PROFILES: dict[str, Profile] = {
 }
 
 
+COMPAT = "compat"  # 兼容端点的配置档没有固定默认值：核心/辅助模型取 user_config 的 compat.core / compat.support
+
+
+def known_provider(provider: str) -> bool:
+    return provider in PROFILES or provider == COMPAT
+
+
+def _base_profile(provider: str) -> Profile:
+    if provider == COMPAT:
+        cfg = keys.compat_settings()
+        return Profile(COMPAT, cfg["core"], cfg["support"])
+    return PROFILES[provider]
+
+
 def make_profile(provider: str, core: str | None = None, support: str | None = None) -> Profile:
-    """按提供方默认值补全并校验：模型必须已登记且属于该提供方。"""
-    if provider not in PROFILES:
-        raise ValueError(f"未知提供方 {provider!r}（可选：{', '.join(PROFILES)}）")
-    base = PROFILES[provider]
+    """按提供方默认值补全并校验：模型必须已登记（compat:<模型名> 动态认）且属于该提供方。"""
+    if not known_provider(provider):
+        raise ValueError(f"未知提供方 {provider!r}（可选：{', '.join((*PROFILES, COMPAT))}）")
+    base = _base_profile(provider)
     profile = Profile(provider, core or base.core, support or base.support)
+    if provider == COMPAT and not (profile.core and profile.support):
+        raise ValueError("请先在设置中填写 OpenAI 兼容端点的核心模型与辅助模型")
     for model in (profile.core, profile.support):
         try:
             owner = get_spec(model).provider

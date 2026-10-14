@@ -19,7 +19,7 @@ const SNAPSHOT_STATUS: Record<string, RunStatus> = {
 export const toDecision = (d: Data, receivedAt = Date.now()): Decision => ({
   cycle: Number(d.cycle), maxCycles: Number(d.max_cycles), bestDraft: Number(d.best_draft),
   bestScore: Number(d.best_score), score: d.score ?? null, gain: d.gain ?? null, violations: d.violations ?? 0,
-  estSeconds: d.est_seconds ?? null, estCost: d.est_cost_usd ?? null, paused: !!d.paused,
+  estSeconds: d.est_seconds ?? null, paused: !!d.paused,
   remaining: Number(d.remaining_s ?? d.timeout_s ?? 0), timeout: Number(d.timeout_s ?? 300), receivedAt,
 });
 
@@ -100,7 +100,6 @@ const HANDLERS: Record<string, Handler> = {
     ...s, messages: onApplied(s.messages, d.messages ?? [], String(d.phase ?? ""), d.agents ?? [], at),
   }),
   agent_thinking: (s, d) => ({ ...s, agent: d.agent ?? s.agent }),
-  token_usage: (s, d) => ({ ...s, cost: s.cost + (Number(d.cost_usd) || 0) }),
   final_selected: (s, d) => ({ ...s, finalDraft: d.draft ?? s.finalDraft }),
   confidence_report: (s, d) => ({ ...s, confidence: typeof d.overall_confidence === "number" ? d.overall_confidence : null }),
   stats: (s, d) => ({ ...s, stats: d, elapsed: Number(d.elapsed_seconds ?? s.elapsed) }),

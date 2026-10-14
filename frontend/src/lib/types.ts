@@ -9,7 +9,6 @@ export interface SessionMeta {
   final_score?: number | null;
   total_cycles?: number | null;
   elapsed_seconds?: number | null;
-  cost_usd?: number | null;
   final_draft?: number | null;        // 终稿取自第几版
   best_scored_draft?: number | null;  // 评审分最高的一版（有引用违规时可能不是终稿）
   citations?: { cited_claims: number | null; violations: number | null; numeric_coverage: number | null } | null;
@@ -66,13 +65,12 @@ export interface LedgerView {
   claims: LedgerClaim[];
 }
 
-export interface AgentUsage { input: number; output: number; cost_usd: number }
+export interface AgentUsage { input: number; output: number }
 
 export interface TokenUsage {
   total_input: number;
   total_cached_input?: number;
   total_output: number;
-  cost_usd: number;
   by_agent: Record<string, AgentUsage>;
 }
 

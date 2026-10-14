@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from "../../components/ui/Icon";
 import { Score, Tick } from "../../components/ui/Score";
-import { f2, usd } from "../../lib/format";
+import { f2 } from "../../lib/format";
 import type { ReviewRound, TokenUsage } from "../../lib/types";
 import { useT, type TKey } from "../../i18n";
 import { N, rich } from "../../i18n/rich";
@@ -96,20 +96,20 @@ function FinalChoice({ x }: { x: Derived }) {
   );
 }
 
-function Cost({ usage }: { usage: TokenUsage }) {
+function Usage({ usage }: { usage: TokenUsage }) {
   const { t } = useT();
-  const agents = Object.entries(usage.by_agent ?? {}).sort((a, b) => b[1].cost_usd - a[1].cost_usd);
-  const max = agents[0]?.[1].cost_usd || 1;
   const M = (v: number) => `${(v / 1e6).toFixed(2)}M`;
+  const total = (u: { input: number; output: number }) => u.input + u.output;
+  const agents = Object.entries(usage.by_agent ?? {}).sort((a, b) => total(b[1]) - total(a[1]));
+  const max = agents[0] ? total(agents[0][1]) || 1 : 1;
   return (
     <>
-      <div className="sec-h"><h3>{t("dossier.proc.cost")}</h3>
-        <span className="meta"><N>{usd(usage.cost_usd)}</N> · {t("common.usageTip")}</span></div>
-      <div className="jbars cost">
+      <div className="sec-h"><h3>{t("dossier.proc.usage")}</h3></div>
+      <div className="jbars usage">
         {agents.map(([name, u]) => (
           <span className="jrow" key={name}><span>{name}</span>
-            <span className="bar-t"><i style={{ width: `${(u.cost_usd / max) * 100}%` }} /></span>
-            <span className="num">{usd(u.cost_usd)}</span></span>
+            <span className="bar-t"><i style={{ width: `${(total(u) / max) * 100}%` }} /></span>
+            <span className="num">{M(total(u))}</span></span>
         ))}
       </div>
       <p className="hint">{rich(t("dossier.proc.tokens"), {
@@ -119,7 +119,7 @@ function Cost({ usage }: { usage: TokenUsage }) {
   );
 }
 
-/** 过程：评分轨迹、7 维 × N 轮、每轮评审要点、终稿选择理由、费用 */
+/** 过程：评分轨迹、7 维 × N 轮、每轮评审要点、终稿选择理由、用量 */
 export function ProcessTab({ d, x }: { d: Dossier; x: Derived }) {
   const { t } = useT();
   return (
@@ -139,7 +139,7 @@ export function ProcessTab({ d, x }: { d: Dossier; x: Derived }) {
       )}
       <div className="block"><div className="sec-h"><h3>{x.finalDraft != null ? rich(t("dossier.proc.why"), { v: <N>{x.finalDraft}</N> }) : t("dossier.proc.whyUnknown")}</h3></div>
         <FinalChoice x={x} /></div>
-      {d.usage && <div className="block"><Cost usage={d.usage} /></div>}
+      {d.usage && <div className="block"><Usage usage={d.usage} /></div>}
     </>
   );
 }

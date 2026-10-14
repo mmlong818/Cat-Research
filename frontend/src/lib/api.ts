@@ -219,37 +219,63 @@ export const clarify = {
 
 // ── Config ────────────────────────────────────────────────────────────────
 
-export const PROVIDERS = ["claude", "openai", "zhipu"] as const;
+export const PROVIDERS = ["claude", "openai", "zhipu", "compat"] as const;
 export type Provider = (typeof PROVIDERS)[number];
+/** 只靠 API Key 接入的云端提供方；compat 另有 Base URL 与模型名，单独一个设置区 */
+export const KEY_PROVIDERS = ["claude", "openai", "zhipu"] as const;
+export const SEARCH_BACKENDS = ["zhipu", "bocha", "tavily"] as const;
+export type SearchBackend = (typeof SEARCH_BACKENDS)[number];
+/** 接口里 key 的名字：提供方或搜索后端（zhipu 两边共用同一个 key） */
+export type KeyName = Provider | SearchBackend;
 
 export interface ModelInfo {
   id: string;
-  tier: "low" | "mid" | "high";   // 按输出价粗分的价格档
-  input_price: number;            // 美元 / 百万 token
-  output_price: number;
 }
 
-export interface ProviderInfo {
-  needs_key: boolean;             // Claude 走订阅，Anthropic key 只是可选
+export interface KeyView {
   has_key: boolean;
   key_source: "" | "keyring" | "env";
   key_preview: string;            // 形如 "...abcd"，只含末 4 位
-  available: boolean;             // 可用于启动任务：不需要 key，或 key 已配置
+}
+
+export interface ProviderInfo extends KeyView {
+  needs_key: boolean;             // Claude 走订阅，Anthropic key 只是可选
+  available: boolean;             // 可用于启动任务：不需要 key，或 key 已配置（compat 还要 Base URL 与模型名）
   defaults: { core: string; support: string };
   models: ModelInfo[];
+  base_url?: string;              // 只有 compat 有
 }
+
+export type SearchBackendInfo = KeyView;
 
 export interface ProfileChoice { provider: Provider; core: string; support: string }
 
 export interface SettingsInfo {
   default_profile: ProfileChoice;
   providers: Record<Provider, ProviderInfo>;
+  search: { backend: SearchBackend; backends: Record<SearchBackend, SearchBackendInfo> };
+}
+
+/** compat 设置：不传 = 不改，空串 = 清除；模型名不必带 "compat:" 前缀 */
+export interface CompatUpdate { base_url?: string; core?: string; support?: string }
+
+export interface CompatTestResult { ok: boolean; tool_calls: boolean; latency_ms: number; detail: string }
+
+export interface SettingsUpdate {
+  /** compat 的核心 / 辅助模型可省略，服务端取同一请求里的 compat 设置 */
+  default_profile?: { provider: Provider; core?: string; support?: string };
+  compat?: CompatUpdate;
+  search_backend?: SearchBackend;
+  /** 空字符串表示不改；删除 key 用 clearKey */
+  api_keys?: Partial<Record<KeyName, string>>;
 }
 
 export const config = {
   get: () => req<SettingsInfo>(`${BASE}/settings`),
-  /** api_keys 里空字符串表示不改；删除 key 用 clearKey */
-  update: (body: { default_profile?: ProfileChoice; api_keys?: Partial<Record<Provider, string>> }) =>
+  update: (body: SettingsUpdate) =>
     req<SettingsInfo>(`${BASE}/settings`, { method: "POST", body: JSON.stringify(body) }),
-  clearKey: (provider: Provider) => req<SettingsInfo>(`${BASE}/settings/keys/${provider}`, { method: "DELETE" }),
+  clearKey: (name: KeyName) => req<SettingsInfo>(`${BASE}/settings/keys/${name}`, { method: "DELETE" }),
+  /** 用表单当前值试连兼容端点（不保存）；缺省项用已保存的 */
+  testCompat: (body: { base_url?: string; api_key?: string; model?: string }) =>
+    req<CompatTestResult>(`${BASE}/settings/compat/test`, { method: "POST", body: JSON.stringify(body) }),
 };

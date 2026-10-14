@@ -34,7 +34,8 @@ class ResolveParamsTests(unittest.TestCase):
             "depth": "deep", "language": "en", "ask_loop": False, "min_cycles": 2, "max_cycles": 5, "queries": 15,
             "supplements": 3, "source_supplement": True, "verify": 16, "recheck": 5,
             "provider": "unknown",  # 模型不在注册表里时提供方记为 unknown
-            "core_model": "core-x", "support_model": "support-y"})
+            "core_model": "core-x", "support_model": "support-y",
+            "search_backend": None})  # 只有 client_tools 提供方（智谱、兼容端点）才记搜索后端
 
     def test_defaults_to_default_depth_and_zh(self):
         snap = resolve_params()

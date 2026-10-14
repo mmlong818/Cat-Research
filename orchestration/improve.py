@@ -35,7 +35,7 @@ class ImproveLoopMixin(PhasesMixin):
             self._gate_directives(f"改进循环第{cycle}轮")
             print(f"\n{'─'*70}\n🔄 第 {cycle}/{policy.max_cycles} 轮：评审第 {current} 版\n{'─'*70}", flush=True)
             self._emit("cycle_start", {"cycle": cycle, "max": policy.max_cycles})
-            self.loop_ask.round_start(cycle, state, self._token_usage)
+            self.loop_ask.round_start(cycle, state)
             self._citations[current] = self._annotate(current)
             reviewed = self._soft("评审", self.critic.review, self._ws, current, cycle,
                                  key_entities=entities, question=q)

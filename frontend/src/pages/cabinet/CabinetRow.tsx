@@ -4,9 +4,10 @@ import { Score } from "../../components/ui/Score";
 import { AskTag, stageLabel } from "../../components/shell/DeskItems";
 import { useT, type TKey } from "../../i18n";
 import { N, rich } from "../../i18n/rich";
-import { clockTime, crId, f2, minutes, plainQuestion, usd } from "../../lib/format";
+import { clockTime, crId, f2, minutes, plainQuestion } from "../../lib/format";
 import { elapsedNow, isLive } from "../../lib/live/model";
 import { live, useNow } from "../../lib/live/store";
+import { modelName } from "../../lib/useSettings";
 import type { SessionMeta } from "../../lib/types";
 
 export interface RowActions {
@@ -23,7 +24,7 @@ function Meta({ s }: { s: SessionMeta }) {
   return (
     <div className="meta">
       {s.depth && <span>{t(`dossier.depth.${s.depth}` as TKey)}</span>}
-      {s.core_model && <span className="num">{s.core_model}</span>}
+      {s.core_model && <span className="num">{modelName(s.core_model)}</span>}
       {s.created_at && <span className="num">{clockTime(s.created_at)}</span>}
     </div>
   );
@@ -59,7 +60,7 @@ function Ops({ s, a }: { s: SessionMeta; a: RowActions }) {
   );
 }
 
-/** 一份卷宗：编号、完整问题、状态印章、评分、轮数、用时、费用、可信度、操作 */
+/** 一份卷宗：编号、完整问题、状态印章、评分、轮数、用时、可信度、操作 */
 export function SessionRow({ s, a }: { s: SessionMeta; a: RowActions }) {
   const { t } = useT();
   const opensDossier = s.status === "completed" && !!s.session_id;
@@ -74,7 +75,6 @@ export function SessionRow({ s, a }: { s: SessionMeta; a: RowActions }) {
       <td>{s.final_score != null ? <Score score={s.final_score} /> : <Muted k="cabinet.unscored" />}</td>
       <td className="r">{s.total_cycles != null ? <N>{s.total_cycles}</N> : <Muted k="cabinet.unrecorded" />}</td>
       <td className="r">{s.elapsed_seconds ? rich(t("cabinet.min"), { n: <N>{minutes(s.elapsed_seconds)}</N> }) : <Muted k="cabinet.untimed" />}</td>
-      <td className="r">{s.cost_usd != null ? <N>{usd(s.cost_usd)}</N> : <Muted k="cabinet.unrecorded" />}</td>
       <td className="r">{s.confidence != null ? <N>{f2(s.confidence)}</N> : ""}</td>
       <Ops s={s} a={a} />
     </tr>
@@ -98,7 +98,6 @@ export function LiveRow({ s, onOpen }: { s: SessionMeta; onOpen: () => void }) {
       <td>{scores.length ? <><Score score={Math.max(...scores)} /><div className="hint">{t("cabinet.best")}</div></> : <Muted k="cabinet.unscored" />}</td>
       <td className="r">{round ? <N>{round.cycle}/{round.max || "?"}</N> : <Muted k="cabinet.unrecorded" />}</td>
       <td className="r">{rich(t("cabinet.min"), { n: <N>{mins}</N> })}</td>
-      <td className="r"><Muted k="cabinet.pendingCost" /></td>
       <td className="r"><Muted k="cabinet.afterClose" /></td>
       <td className="ops"><button className="iconbtn" title={t("cabinet.op.case")} onClick={onOpen}><Icon name="eye" /></button></td>
     </tr>

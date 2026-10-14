@@ -1,4 +1,4 @@
-"""OpenAI（Responses API）提供方：请求构造、托管联网、结构化输出及降级、退避重试、用量与费用、密钥不泄露。"""
+"""OpenAI（Responses API）提供方：请求构造、托管联网、结构化输出及降级、退避重试、用量、密钥不泄露。"""
 import asyncio
 import json
 import os
@@ -152,14 +152,14 @@ class KeyTests(_Base):
 
 
 class ResultTests(_Base):
-    def test_usage_and_cost(self):
+    def test_usage_counts_and_no_cost_fields(self):
         r = self.run_with([oa_response("ok", input_tokens=100_000, cached=40_000, output=10_000, reasoning=3_000,
                                        searches=2)], _req(tools=("WebSearch",)))
         u = r.model_usage["gpt-6.1-sol"]
         self.assertEqual((u["inputTokens"], u["cacheReadInputTokens"], u["outputTokens"]), (60_000, 40_000, 10_000))
         self.assertEqual((u["reasoningOutputTokens"], u["webSearchRequests"]), (3_000, 2))
-        self.assertAlmostEqual(r.cost_usd, 0.244)
-        self.assertAlmostEqual(u["costUSD"], 0.244)
+        self.assertNotIn("costUSD", u)
+        self.assertFalse(hasattr(r, "cost_usd"))
 
     def test_incomplete_and_refusal(self):
         with self.assertRaisesRegex(LLMError, "max_output_tokens"):

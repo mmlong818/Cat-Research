@@ -1,9 +1,10 @@
-"""模型注册表（能力表）、推理强度映射、费用计算与模型配置档。"""
+"""模型注册表（能力表）、推理强度映射与模型配置档。"""
+import dataclasses
 import unittest
 from unittest import mock
 
 import config
-from llm.models import MODELS, cost_usd, get_spec, resolve_effort
+from llm.models import MODELS, get_spec, resolve_effort
 from llm.profiles import PROFILES, Profile, default_profile, make_profile
 from llm.types import LLMConfigError
 
@@ -38,8 +39,13 @@ class RegistryTests(unittest.TestCase):
 
 
 class EffortTests(unittest.TestCase):
-    def test_glm_maps_to_nearest_supported_level_ties_go_up(self):
-        got = {e: resolve_effort(MODELS["glm-5.3"], e) for e in ("low", "medium", "high", "xhigh", "max")}
+    def test_glm_always_uses_low(self):
+        for e in ("low", "medium", "high", "xhigh", "max"):
+            self.assertEqual(resolve_effort(MODELS["glm-5.3"], e), "low")
+
+    def test_maps_to_nearest_supported_level_ties_go_up(self):
+        spec = dataclasses.replace(MODELS["glm-5.3"], efforts=("low", "high", "max"))
+        got = {e: resolve_effort(spec, e) for e in ("low", "medium", "high", "xhigh", "max")}
         self.assertEqual(got, {"low": "low", "medium": "high", "high": "high", "xhigh": "max", "max": "max"})
 
     def test_supported_levels_pass_through(self):
@@ -49,24 +55,6 @@ class EffortTests(unittest.TestCase):
 
     def test_models_without_effort_get_none(self):
         self.assertIsNone(resolve_effort(get_spec("claude-opus-4-8"), "high"))
-
-
-class CostTests(unittest.TestCase):
-    def test_openai_splits_cached_input_and_adds_searches(self):
-        cost = cost_usd(MODELS["gpt-6.1-sol"], input_tokens=100_000, cached=40_000, output=10_000, searches=2)
-        self.assertAlmostEqual(cost, 0.12 + 0.004 + 0.1 + 0.02)
-
-    def test_openai_long_context_multipliers(self):
-        cost = cost_usd(MODELS["gpt-6.1-sol"], input_tokens=300_000, output=1_000)
-        self.assertAlmostEqual(cost, 300_000 * 2 * 2 / 1e6 + 1_000 * 10 * 1.5 / 1e6)
-
-    def test_glm_usd_prices_and_search(self):
-        cost = cost_usd(MODELS["glm-5.3"], input_tokens=1_000_000, cached=200_000, output=100_000, searches=3)
-        self.assertAlmostEqual(cost, 1.12 + 0.052 + 0.44 + 0.03)
-
-    def test_claude_api_cache_write(self):
-        cost = cost_usd(MODELS["claude-sonnet-5-5"], input_tokens=3_500, cached=2_000, cache_write=500, output=100)
-        self.assertAlmostEqual(cost, 0.002 + 0.0004 + 0.00125 + 0.001)
 
 
 class ProfileTests(unittest.TestCase):

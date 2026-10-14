@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PROVIDERS, type Provider, type SettingsInfo } from "../../lib/api";
-import { modelLabel, providerName, useSettings } from "../../lib/useSettings";
+import { modelLabel, modelName, providerName, useSettings } from "../../lib/useSettings";
 import { useT } from "../../i18n";
 import { setDraft, type ModelChoice } from "./draft";
 
@@ -15,12 +15,11 @@ function effective(settings: SettingsInfo, c: ModelChoice) {
 function ModelSelect({ label, value, models, onChange }: {
   label: string; value: string; models: SettingsInfo["providers"][Provider]["models"]; onChange: (id: string) => void;
 }) {
-  const { t } = useT();
   return (
     <label className="model-pick-row"><span className="hint">{label}</span>
       <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
-        {!models.some((m) => m.id === value) && <option value={value}>{value}</option>}
-        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(t, m)}</option>)}
+        {!models.some((m) => m.id === value) && <option value={value}>{modelName(value)}</option>}
+        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(m)}</option>)}
       </select>
     </label>
   );
@@ -37,7 +36,7 @@ function Picker({ settings, value }: { settings: SettingsInfo; value: ModelChoic
           <option value="default">{t("new.f.modelDefault", { name: providerName(settings.default_profile.provider) })}</option>
           {PROVIDERS.map((p) => (
             <option key={p} value={p} disabled={!settings.providers[p].available}>
-              {settings.providers[p].available ? providerName(p) : t("new.f.modelNoKey", { name: providerName(p) })}
+              {settings.providers[p].available ? providerName(p) : t(p === "compat" ? "new.f.modelNotSet" : "new.f.modelNoKey", { name: providerName(p) })}
             </option>
           ))}
         </select>
@@ -61,8 +60,8 @@ export function ModelField({ value }: { value: ModelChoice }) {
           {t(open ? "new.f.modelDone" : "new.f.modelChange")}</button></span>}
       </div>
       {eff ? (
-        <p className="model-line">{providerName(eff.provider)} · {t("new.f.core")} <span className="num">{eff.core}</span>
-          <span className="sep" />{t("new.f.support")} <span className="num">{eff.support}</span></p>
+        <p className="model-line">{providerName(eff.provider)} · {t("new.f.core")} <span className="num">{modelName(eff.core)}</span>
+          <span className="sep" />{t("new.f.support")} <span className="num">{modelName(eff.support)}</span></p>
       ) : <p className="hint">{t("new.f.modelLoading")}</p>}
       {settings && open && <Picker settings={settings} value={value} />}
       <p className="hint mt-s">{t("new.f.modelHint")}</p>

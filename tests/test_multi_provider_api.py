@@ -234,7 +234,7 @@ def fake_clarify_call(seen: list):
     def fake(req):
         seen.append(req.model)
         data = {"message": "m", "summary": {}, "ready": False, "confidence": 0.1}
-        return LLMResult(text="", data=data, cost_usd=0, duration_ms=0, num_turns=1, session_id="")
+        return LLMResult(text="", data=data, duration_ms=0, num_turns=1, session_id="")
     return fake
 
 

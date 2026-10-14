@@ -15,7 +15,7 @@ from llm.providers import claude as claude_provider
 
 def _result(**kw):
     base = dict(subtype="success", duration_ms=1200, duration_api_ms=1000, is_error=False,
-                num_turns=2, session_id="s1", total_cost_usd=0.01, result="ok")
+                num_turns=2, session_id="s1", result="ok")
     base.update(kw)
     return ResultMessage(**base)
 
@@ -42,11 +42,12 @@ class CallTests(unittest.TestCase):
         with mock.patch.object(claude_provider, "query", fake):
             return client.call(req)
 
-    def test_success_returns_text_cost_and_usage(self):
+    def test_success_returns_text_and_usage(self):
         fake = _fake_query(SystemMessage(subtype="init", data={}),
                            _result(model_usage={"claude-opus-5-5": {}}))
         r = self._run(fake)
-        self.assertEqual((r.text, r.cost_usd, r.num_turns), ("ok", 0.01, 2))
+        self.assertEqual((r.text, r.num_turns), ("ok", 2))
+        self.assertFalse(hasattr(r, "cost_usd"))
         self.assertIn("claude-opus-5-5", r.model_usage)
 
     def test_structured_output_returned_as_data(self):

@@ -1,7 +1,7 @@
-"""一次 LLMRequest 内（可能多次 API 调用）的用量与费用累计，输出为 Claude Code modelUsage 形状。"""
+"""一次 LLMRequest 内（可能多次 API 调用）的用量累计，输出为 Claude Code modelUsage 形状。"""
 from dataclasses import dataclass
 
-from llm.models import ModelSpec, cost_usd
+from llm.models import ModelSpec
 
 
 @dataclass
@@ -14,12 +14,11 @@ class Usage:
     reasoning_tokens: int = 0
     searches: int = 0
     fetches: int = 0
-    cost: float = 0.0
     calls: int = 0
 
     def add_call(self, input_tokens: int, cached: int, output: int, reasoning: int = 0,
                  cache_write: int = 0, searches: int = 0) -> None:
-        """记一次 API 调用；长上下文倍率按单次调用的输入量判断。"""
+        """记一次 API 调用。"""
         self.calls += 1
         self.input_tokens += input_tokens
         self.cached_tokens += cached
@@ -27,13 +26,11 @@ class Usage:
         self.output_tokens += output
         self.reasoning_tokens += reasoning
         self.searches += searches
-        self.cost += cost_usd(self.spec, input_tokens, cached, output, cache_write, searches)
 
     def add_local_tools(self, searches: int, fetches: int) -> None:
-        """本地工具循环里调用的搜索 API 按次计费；本地抓取不计费。"""
+        """本地工具循环里的搜索与抓取次数。"""
         self.searches += searches
         self.fetches += fetches
-        self.cost += searches * self.spec.search_price
 
     def model_usage(self) -> dict:
         return {self.spec.id: {
@@ -44,5 +41,4 @@ class Usage:
             "reasoningOutputTokens": self.reasoning_tokens,
             "webSearchRequests": self.searches,
             "webFetchRequests": self.fetches,
-            "costUSD": self.cost,
         }}

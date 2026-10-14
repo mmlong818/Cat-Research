@@ -4,6 +4,7 @@
 快照（resolve_params）写入任务创建审计与 00_session.json，便于事后复核"这次到底按什么参数跑的"。
 """
 import config as _config  # 运行时读取 _config.*（API 可在运行中修改模型与档位）
+from llm.keys import CLIENT_TOOLS_PROVIDERS, selected_search_backend
 from llm.profiles import Profile, default_profile
 
 
@@ -17,12 +18,13 @@ def resolve_cycles(preset: dict, min_cycles: int | None, max_cycles: int | None)
 def resolve_params(depth: str | None = None, language: str = "zh", min_cycles: int | None = None,
                    max_cycles: int | None = None, max_queries: int | None = None,
                    profile: Profile | None = None, ask_loop: bool = False) -> dict:
-    """完整参数快照：档位预设被用户覆盖值（轮数、查询数）改写后的结果，加上语言与提供方、核心/辅助模型名。
+    """完整参数快照：档位预设被用户覆盖值（轮数、查询数）改写后的结果，加上语言与提供方、核心/辅助模型名、联网搜索后端。
     profile 为本次任务的模型配置档；不传时取默认配置档（设置页保存的，否则当前 config 的模型）。"""
     depth = depth or _config.DEFAULT_DEPTH
     preset = _config.DEPTH_PRESETS[depth]
     min_eff, max_eff = resolve_cycles(preset, min_cycles, max_cycles)
     profile = profile or default_profile()
+    search_backend = selected_search_backend() if profile.provider in CLIENT_TOOLS_PROVIDERS else None
     return {
         "depth": depth, "language": language, "ask_loop": ask_loop,
         "min_cycles": min_eff, "max_cycles": max_eff,
@@ -30,4 +32,5 @@ def resolve_params(depth: str | None = None, language: str = "zh", min_cycles: i
         "supplements": preset["supplements"], "source_supplement": preset["source_supplement"],
         "verify": preset["verify"], "recheck": preset["recheck"],
         "provider": profile.provider, "core_model": profile.core, "support_model": profile.support,
+        "search_backend": search_backend,  # 仅 client_tools 提供方（智谱、兼容端点）用到，其余为 None
     }

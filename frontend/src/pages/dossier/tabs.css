@@ -260,7 +260,7 @@
 .proc-why {
   font-size: var(--t-body);
 }
-.jbars.cost {
+.jbars.usage {
   margin-top: var(--s-7);
   max-width: 560px;
 }

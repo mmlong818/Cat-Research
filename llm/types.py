@@ -54,7 +54,6 @@ class LLMRequest:
 class LLMResult:
     text: str
     data: Any
-    cost_usd: float
     duration_ms: int
     num_turns: int
     session_id: str

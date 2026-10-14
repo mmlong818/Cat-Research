@@ -36,7 +36,6 @@ export interface Decision {
   gain: number | null;
   violations: number;
   estSeconds: number | null;
-  estCost: number | null;
   paused: boolean;
   remaining: number;
   timeout: number;
@@ -87,7 +86,6 @@ export interface CaseState {
   messages: DirectiveMsg[];
   elapsed: number;
   elapsedAt: number;
-  cost: number;
   agent: string | null;
   finalDraft: number | null;
   confidence: number | null;
@@ -100,7 +98,7 @@ export const initState = (taskId: string): CaseState => ({
   taskId, question: "", sessionId: null, status: "connecting", ended: false, offline: null, error: null,
   stage: -1, stageAt: {}, plan: null, rounds: [], loopStop: null, decision: null, decided: null,
   pauseRequested: false, lastPause: null, pauseGate: null, resuming: false, stopping: false,
-  messages: [], elapsed: 0, elapsedAt: Date.now(), cost: 0, agent: null, finalDraft: null,
+  messages: [], elapsed: 0, elapsedAt: Date.now(), agent: null, finalDraft: null,
   confidence: null, stats: null, log: [], snapshotAt: "",
 });
 

@@ -131,24 +131,27 @@ class SessionListTests(SessionsTestCase):
             res = self.client.get("/api/sessions", params=params, headers=HEADERS)
             self.assertEqual(res.status_code, 422, params)
 
-    def test_entry_carries_cycles_elapsed_and_cost_from_session_meta(self):
+    def test_entry_carries_cycles_and_elapsed_from_session_meta_without_cost(self):
         self.workspace("20261001_000012", "2026-10-01T00:00:12", total_cycles=5, elapsed_seconds=4073,
                        token_usage={"total_input": 13378092, "cost_usd": 31.553})
         s = self.by_id(self.sessions())["20261001_000012"]
-        self.assertEqual((s["total_cycles"], s["elapsed_seconds"], s["cost_usd"]), (5, 4073, 31.553))
+        self.assertEqual((s["total_cycles"], s["elapsed_seconds"]), (5, 4073))
+        self.assertNotIn("cost_usd", s)  # 旧会话里残留的 cost_usd 不再透出
 
-    def test_entry_without_usage_or_with_broken_usage_has_null_cost(self):
+    def test_entry_without_usage_or_with_broken_usage_has_null_stats(self):
         self.workspace("20261001_000013", "2026-10-01T00:00:13")
         self.workspace("20261001_000014", "2026-10-01T00:00:14", token_usage="坏的")
         got = self.by_id(self.sessions())
         for sid in ("20261001_000013", "20261001_000014"):
             s = got[sid]
-            self.assertEqual((s["total_cycles"], s["elapsed_seconds"], s["cost_usd"]), (None, None, None), sid)
+            self.assertEqual((s["total_cycles"], s["elapsed_seconds"]), (None, None), sid)
+            self.assertNotIn("cost_usd", s)
 
-    def test_task_only_entry_has_null_cost(self):
+    def test_task_only_entry_has_null_elapsed(self):
         self.task("t10", "failed", error="x")
         s = self.by_id(self.sessions())["t10"]
-        self.assertEqual((s["elapsed_seconds"], s["cost_usd"]), (None, None))
+        self.assertIsNone(s["elapsed_seconds"])
+        self.assertNotIn("cost_usd", s)
 
     def test_entry_carries_final_draft_and_citations_from_session_meta(self):
         """卷宗封面要写「终稿取第 N 版、引用违规、带数字句子的挂声明比例」，这些只在 00_session.json 里。"""

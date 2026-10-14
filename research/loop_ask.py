@@ -31,10 +31,6 @@ def should_ask(policy: LoopPolicy, state: LoopState, prev_best: float | None) ->
     return small_gain or state.best_score >= ASK_SCORE_AT_LEAST
 
 
-def _cost(usage: dict) -> float:
-    return sum(u.get("cost_usd", 0.0) for u in usage.values())
-
-
 class LoopAsk:
     def __init__(self, emit: Callable[[str, dict], None], controls: Controls = lambda: (None, None),
                  timeout_s: float = ASK_TIMEOUT_S, clock: Callable[[], float] = time.time, poll_s: float = 0.25):
@@ -47,26 +43,24 @@ class LoopAsk:
         self._choice: str | None = None
         self._deadline = 0.0
         self._frozen: float | None = None         # 暂停中时剩余秒数
-        self._rounds: list[tuple[float, float]] = []   # 已完成各轮的 (耗时秒, 费用美元)
-        self._mark: tuple[float, float] | None = None
+        self._rounds: list[float] = []            # 已完成各轮的耗时（秒）
+        self._mark: float | None = None
         self._prev_best: float | None = None
 
-    # ── 每轮开头调用：记录起点，顺带结算上一轮的耗时与费用 ──────────────────
+    # ── 每轮开头调用：记录起点，顺带结算上一轮的耗时 ──────────────────
 
-    def round_start(self, cycle: int, state: LoopState, usage: dict) -> None:
-        now, cost = self._clock(), _cost(usage)
+    def round_start(self, cycle: int, state: LoopState) -> None:
+        now = self._clock()
         if cycle == 1:
             self._rounds = []
-        elif self._mark:
-            self._rounds.append((now - self._mark[0], cost - self._mark[1]))
-        self._mark, self._prev_best = (now, cost), state.best_score
+        elif self._mark is not None:
+            self._rounds.append(now - self._mark)
+        self._mark, self._prev_best = now, state.best_score
 
     def _estimate(self) -> dict:
         if not self._rounds:
-            return {"est_seconds": None, "est_cost_usd": None}
-        last_cost = self._rounds[-1][1]
-        return {"est_seconds": round(sum(s for s, _ in self._rounds) / len(self._rounds)),
-                "est_cost_usd": round(last_cost, 3) if last_cost > 0 else None}
+            return {"est_seconds": None}
+        return {"est_seconds": round(sum(self._rounds) / len(self._rounds))}
 
     # ── 回答与查询（API 线程） ──────────────────────────────────────────────
 

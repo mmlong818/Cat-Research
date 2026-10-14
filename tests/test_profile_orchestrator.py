@@ -76,18 +76,20 @@ class UsageReportTests(_Base):
         usage = {"claude-opus-5-5": {"inputTokens": 100, "cacheReadInputTokens": 900,
                                      "cacheCreationInputTokens": 50, "outputTokens": 30},
                  "claude-haiku-4-5": {"inputTokens": 10, "outputTokens": 5}}
-        agent.report_usage(LLMResult(text="", data=None, cost_usd=0.5, duration_ms=1, num_turns=1,
+        agent.report_usage(LLMResult(text="", data=None, duration_ms=1, num_turns=1,
                                      session_id="", model_usage=usage))
         data = events[-1][1]
         self.assertEqual((data["total_input"], data["cached_input"], data["total_output"]), (1060, 900, 35))
+        self.assertNotIn("cost_usd", data)
 
     def test_orchestrator_accumulates_cached_input(self):
         o = orch_mod.ResearchOrchestrator(profile=PROFILES["claude"])
-        o._token_usage = {"研究员": {"input": 1, "output": 1, "cost_usd": 0.0}}  # 旧检查点没有 cached_input
-        o._emit("token_usage", {"agent": "研究员", "total_input": 10, "cached_input": 7, "total_output": 2,
-                                "cost_usd": 0.1})
+        o._token_usage = {"研究员": {"input": 1, "output": 1}}  # 旧检查点没有 cached_input
+        o._emit("token_usage", {"agent": "研究员", "total_input": 10, "cached_input": 7, "total_output": 2})
         summary = o._usage_summary()
         self.assertEqual((summary["total_input"], summary["total_cached_input"]), (11, 7))
+        self.assertNotIn("cost_usd", summary)
+        self.assertNotIn("cost_usd", summary["by_agent"]["研究员"])
 
 
 if __name__ == "__main__":
