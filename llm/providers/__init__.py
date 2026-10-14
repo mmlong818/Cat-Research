@@ -1,4 +1,4 @@
-"""提供方注册表：名称 → 实现。claude（订阅，claude-agent-sdk）/ anthropic（API Key）/ openai / zhipu。
+"""提供方注册表：名称 → 实现。claude（订阅）/ anthropic（API Key）/ openai / zhipu / compat（OpenAI 兼容端点）。
 
 每次调用新建实例（无状态）；测试可替换 PROVIDERS 中的工厂。
 """
@@ -8,6 +8,7 @@ from typing import Protocol
 from llm.models import ModelSpec
 from llm.providers.anthropic_api import AnthropicApiProvider
 from llm.providers.claude import ClaudeAgentProvider
+from llm.providers.compat import CompatProvider
 from llm.providers.openai_responses import OpenAIProvider
 from llm.providers.zhipu import ZhipuProvider
 from llm.types import LLMConfigError, LLMRequest, LLMResult
@@ -22,6 +23,7 @@ PROVIDERS: dict[str, Callable[[], Provider]] = {
     "anthropic": AnthropicApiProvider,
     "openai": OpenAIProvider,
     "zhipu": ZhipuProvider,
+    "compat": CompatProvider,
 }
 _VENDOR = {"anthropic": "claude"}  # 传输方式 → 模型所属厂商
 

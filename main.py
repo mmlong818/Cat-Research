@@ -56,9 +56,9 @@ def check_environment():
         except LLMError as e:
             errors.append(str(e))
     else:
-        label = keys.missing_key_label(provider)
-        if label:
-            errors.append(f"默认提供方 {provider} 未配置 {label} API Key：请在设置页填写，或设置对应的环境变量")
+        items = keys.missing_requirements(provider)
+        if items:
+            errors.append(f"默认提供方 {provider} 缺少：{'、'.join(items)}（请在设置页填写，或设置对应的环境变量）")
 
     return errors, warnings
 

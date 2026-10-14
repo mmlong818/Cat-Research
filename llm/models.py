@@ -14,7 +14,7 @@ _ALL_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 @dataclass(frozen=True)
 class ModelSpec:
     id: str
-    provider: str            # claude / openai / zhipu
+    provider: str            # claude / openai / zhipu / compat
     input_price: float       # 未命中缓存的输入
     cached_price: float      # 命中缓存的输入
     output_price: float      # 输出（含推理 token）
@@ -26,7 +26,7 @@ class ModelSpec:
     max_concurrency: int     # 单个 call_many 内同一模型的并发上限
     output_budget: int = 0   # 每次请求的输出上限（max_output_tokens / max_tokens）；0 表示不传
     cache_write_price: float = 0.0
-    search_price: float = 0.0          # 美元/次
+    search_price: float = 0.0          # 美元/次（仅托管搜索；client_tools 按所选搜索后端计价，见 llm.search）
     long_context_threshold: int = 0    # 单次输入超过该值后按倍率计价（0 表示无此规则）
     long_input_factor: float = 1.0
     long_output_factor: float = 1.0
@@ -44,9 +44,8 @@ def _gpt(id_: str, inp: float, cached: float, out: float, efforts=_ALL_EFFORTS) 
 
 
 def _glm(id_: str, inp: float, cached: float, out: float, concurrency: int) -> ModelSpec:
-    return ModelSpec(id_, "zhipu", inp, cached, out, 1_000_000, 128_000, ("low", "high", "max"),
-                     "client_tools", "json_object", max_concurrency=concurrency, output_budget=65_536,
-                     search_price=0.01)
+    return ModelSpec(id_, "zhipu", inp, cached, out, 1_000_000, 128_000, ("low",),
+                     "client_tools", "json_object", max_concurrency=concurrency, output_budget=65_536)
 
 
 MODELS: dict[str, ModelSpec] = {s.id: s for s in (
@@ -63,13 +62,24 @@ MODELS: dict[str, ModelSpec] = {s.id: s for s in (
 )}
 
 _CLAUDE_ALIASES = ("opus", "sonnet", "haiku", "fable")
+COMPAT_PREFIX = "compat:"  # OpenAI 兼容端点的模型 ID 写作 compat:<端点里的模型名>，发给端点时去掉前缀
+
+
+def _compat_spec(model: str) -> ModelSpec:
+    if not model.removeprefix(COMPAT_PREFIX):
+        raise LLMConfigError(f"模型 ID {model!r} 缺少端点里的模型名（应写作 {COMPAT_PREFIX}<模型名>）")
+    # 价格未知按 0 计（费用只含搜索）；上下文按 128k 估计；不传 max_tokens 与推理参数
+    return ModelSpec(model, "compat", 0.0, 0.0, 0.0, 128_000, 0, (), "client_tools", "json_object",
+                     max_concurrency=3)
 
 
 def get_spec(model: str) -> ModelSpec:
-    """按模型 ID 查能力表。未登记的 claude-* 与别名交给 Claude Code 自行解析（费用由其上报）。"""
+    """按模型 ID 查能力表。未登记的 claude-* 与别名交给 Claude Code 自行解析（费用由其上报）；compat: 前缀动态生成。"""
     spec = MODELS.get(model)
     if spec:
         return spec
+    if model.startswith(COMPAT_PREFIX):
+        return _compat_spec(model)
     if model.startswith("claude-") or model.split("[")[0] in _CLAUDE_ALIASES:
         return ModelSpec(model, "claude", 0.0, 0.0, 0.0, 0, 0, (), "native", "json_schema", max_concurrency=4)
     raise LLMConfigError(f"未知模型 {model!r}：不在模型注册表中（已注册：{', '.join(MODELS)}）")

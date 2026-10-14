@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { config, type ModelInfo, type SettingsInfo } from "./api";
+import { config, PROVIDERS, type ModelInfo, type SettingsInfo } from "./api";
 import { translate, type TFunc, type TKey } from "../i18n";
 
 const CHANGED = "cat-settings-changed";
@@ -21,8 +21,12 @@ export function useSettings(): SettingsInfo | null {
 
 /** 提供方的显示名；未知提供方（旧数据）原样返回。 */
 export const providerName = (p: string | null | undefined): string =>
-  p === "claude" || p === "openai" || p === "zhipu" ? translate(`common.provider.${p}` as TKey) : (p ?? "");
+  (PROVIDERS as readonly string[]).includes(p ?? "") ? translate(`common.provider.${p}` as TKey) : (p ?? "");
 
-/** 下拉里的模型文案：型号 · 价格（美元/百万 token，输入/输出）；withTier 时再加价格档 */
+/** compat 模型 ID 形如 "compat:名字"，界面只显示名字。 */
+export const modelName = (id: string): string => id.replace(/^compat:/, "");
+
+/** 下拉里的模型文案：型号 · 价格（美元/百万 token，输入/输出）；withTier 时再加价格档。兼容端点不计 token 价格，只显示名字。 */
 export const modelLabel = (t: TFunc, m: ModelInfo, withTier = true): string =>
-  `${m.id} · $${m.input_price}/$${m.output_price}${withTier ? ` · ${t(`common.tier.${m.tier}` as TKey)}` : ""}`;
+  m.id.startsWith("compat:") ? modelName(m.id)
+    : `${m.id} · $${m.input_price}/$${m.output_price}${withTier ? ` · ${t(`common.tier.${m.tier}` as TKey)}` : ""}`;

@@ -11,7 +11,8 @@ from keyring.errors import KeyringError, PasswordDeleteError
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "user_config.json")
 _SERVICE = "cat-research"
-SECRET_KEYS = ("anthropic_api_key", "openai_api_key", "zhipu_api_key")
+SECRET_KEYS = ("anthropic_api_key", "openai_api_key", "zhipu_api_key", "compat_api_key", "bocha_api_key",
+               "tavily_api_key")
 
 
 class SecretStoreUnavailable(RuntimeError):

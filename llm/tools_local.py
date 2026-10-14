@@ -1,6 +1,6 @@
-"""本地联网工具：给没有托管联网能力的模型（智谱 GLM）在工具循环中调用。
+"""本地联网工具：给没有托管联网能力的模型（智谱 GLM、OpenAI 兼容端点）在工具循环中调用。
 
-WebSearch 调智谱 Web Search API，WebFetch 在本机抓取网页并用标准库提取正文。
+WebSearch 调所选搜索后端（llm.search），WebFetch 在本机抓取网页并用标准库提取正文。
 工具名与 Claude Code 内置工具同名，智能体提示词里的 WebSearch / WebFetch 无需改动。
 工具失败以 {"error": ...} 交回模型，不中断整个调用。
 """
@@ -16,15 +16,13 @@ from urllib.parse import urljoin, urlparse
 
 import requests  # type: ignore[import-untyped]  # 未安装 types-requests 存根
 
-from llm.retry import Sleep, with_backoff
+from llm.search.base import RECENCY, SEARCH_COUNT_MAX, SEARCH_QUERY_MAX, SearchFn
+from llm.search.base import SEARCH_SNIPPET_CHARS as SEARCH_SNIPPET_CHARS  # 向后兼容的再导出
+from llm.search.zhipu import SEARCH_ENGINE as SEARCH_ENGINE  # 向后兼容的再导出
+from llm.search.zhipu import ZHIPU_SEARCH_URL as ZHIPU_SEARCH_URL
+from llm.search.zhipu import zhipu_search as zhipu_search
 from llm.types import LLMConfigError
 
-ZHIPU_SEARCH_URL = "https://open.bigmodel.cn/api/paas/v4/web_search"
-SEARCH_ENGINE = "search_pro"
-SEARCH_QUERY_MAX = 70
-SEARCH_COUNT_MAX = 20
-SEARCH_SNIPPET_CHARS = 800
-RECENCY = ("oneDay", "oneWeek", "oneMonth", "oneYear", "noLimit")
 FETCH_DEFAULT_CHARS = 6000
 FETCH_MAX_CHARS = 20000
 FETCH_TIMEOUT = 20
@@ -32,7 +30,6 @@ MAX_DOWNLOAD_BYTES = 3_000_000
 MAX_REDIRECTS = 5
 _UA = "Mozilla/5.0 (compatible; CatResearch/2.0)"
 
-SearchFn = Callable[[str, int, str], Awaitable[dict]]
 FetchFn = Callable[[str, int], Awaitable[dict]]
 
 TOOL_SPECS = {
@@ -173,59 +170,6 @@ async def fetch_page(url: str, max_chars: int = FETCH_DEFAULT_CHARS, *,
     text = extract_text(body) if "html" in content_type or not content_type else body.strip()
     return {"url": url, "text": text[:max_chars], "original_chars": len(text),
             "returned_chars": min(len(text), max_chars), "truncated": len(text) > max_chars}
-
-
-# ── 智谱 Web Search API ──────────────────────────────────────────────────────
-
-class _Transient(Exception):
-    """可退避重试的搜索失败（429 / 并发超限 / 5xx）"""
-
-
-def _http_post(url: str, headers: dict, payload: dict) -> tuple[int, dict]:
-    with requests.Session() as session:
-        session.trust_env = False  # 国内接口不走系统代理
-        resp = session.post(url, headers=headers, json=payload, timeout=30)
-    try:
-        return resp.status_code, resp.json()
-    except ValueError:
-        return resp.status_code, {"error": {"message": resp.text[:200]}}
-
-
-def _describe(status: int, body: dict) -> str:
-    err = body.get("error") or {}
-    return f"HTTP {status} code={err.get('code', '')} {err.get('message', '')}".strip()
-
-
-def _trim(item: dict) -> dict:
-    out = {k: item.get(k) for k in ("title", "link", "media", "publish_date")}
-    out["content"] = (item.get("content") or "")[:SEARCH_SNIPPET_CHARS]
-    return {k: v for k, v in out.items() if v not in (None, "")}
-
-
-async def zhipu_search(key: str, query: str, count: int = 8, recency: str = "noLimit", *,
-                       post: Callable[[str, dict, dict], tuple[int, dict]] | None = None,
-                       sleep: Sleep = asyncio.sleep) -> dict:
-    payload = {"search_query": query[:SEARCH_QUERY_MAX], "search_engine": SEARCH_ENGINE,
-               "count": min(max(count, 1), SEARCH_COUNT_MAX),
-               "search_recency_filter": recency if recency in RECENCY else "noLimit"}
-    headers = {"Authorization": f"Bearer {key}"}
-    poster = post or _http_post
-
-    async def once() -> tuple[int, dict]:
-        status, body = await asyncio.to_thread(poster, ZHIPU_SEARCH_URL, headers, payload)
-        if status == 429 or status >= 500:
-            raise _Transient(_describe(status, body))
-        return status, body
-
-    try:
-        status, body = await with_backoff(once, lambda e: isinstance(e, _Transient), sleep, "智谱搜索")
-    except _Transient as e:
-        return {"error": f"搜索暂时不可用（已退避重试）：{e}"}
-    except requests.RequestException as e:
-        return {"error": f"搜索请求失败：{type(e).__name__}"}
-    if status != 200:
-        return {"error": f"搜索失败：{_describe(status, body)}"}
-    return {"results": [_trim(i) for i in body.get("search_result") or []]}
 
 
 # ── 工具分发 ─────────────────────────────────────────────────────────────────

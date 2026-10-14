@@ -7,6 +7,7 @@ import { N, rich } from "../../i18n/rich";
 import { clockTime, crId, f2, minutes, plainQuestion, usd } from "../../lib/format";
 import { elapsedNow, isLive } from "../../lib/live/model";
 import { live, useNow } from "../../lib/live/store";
+import { modelName } from "../../lib/useSettings";
 import type { SessionMeta } from "../../lib/types";
 
 export interface RowActions {
@@ -23,7 +24,7 @@ function Meta({ s }: { s: SessionMeta }) {
   return (
     <div className="meta">
       {s.depth && <span>{t(`dossier.depth.${s.depth}` as TKey)}</span>}
-      {s.core_model && <span className="num">{s.core_model}</span>}
+      {s.core_model && <span className="num">{modelName(s.core_model)}</span>}
       {s.created_at && <span className="num">{clockTime(s.created_at)}</span>}
     </div>
   );

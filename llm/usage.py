@@ -29,11 +29,11 @@ class Usage:
         self.searches += searches
         self.cost += cost_usd(self.spec, input_tokens, cached, output, cache_write, searches)
 
-    def add_local_tools(self, searches: int, fetches: int) -> None:
-        """本地工具循环里调用的搜索 API 按次计费；本地抓取不计费。"""
+    def add_local_tools(self, searches: int, fetches: int, search_price: float) -> None:
+        """本地工具循环里调用的搜索 API 按所选搜索后端的单价（美元/次）计费；本地抓取不计费。"""
         self.searches += searches
         self.fetches += fetches
-        self.cost += searches * self.spec.search_price
+        self.cost += searches * search_price
 
     def model_usage(self) -> dict:
         return {self.spec.id: {

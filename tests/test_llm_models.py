@@ -1,4 +1,5 @@
 """模型注册表（能力表）、推理强度映射、费用计算与模型配置档。"""
+import dataclasses
 import unittest
 from unittest import mock
 
@@ -38,8 +39,13 @@ class RegistryTests(unittest.TestCase):
 
 
 class EffortTests(unittest.TestCase):
-    def test_glm_maps_to_nearest_supported_level_ties_go_up(self):
-        got = {e: resolve_effort(MODELS["glm-5.3"], e) for e in ("low", "medium", "high", "xhigh", "max")}
+    def test_glm_always_uses_low(self):
+        for e in ("low", "medium", "high", "xhigh", "max"):
+            self.assertEqual(resolve_effort(MODELS["glm-5.3"], e), "low")
+
+    def test_maps_to_nearest_supported_level_ties_go_up(self):
+        spec = dataclasses.replace(MODELS["glm-5.3"], efforts=("low", "high", "max"))
+        got = {e: resolve_effort(spec, e) for e in ("low", "medium", "high", "xhigh", "max")}
         self.assertEqual(got, {"low": "low", "medium": "high", "high": "high", "xhigh": "max", "max": "max"})
 
     def test_supported_levels_pass_through(self):
@@ -60,9 +66,9 @@ class CostTests(unittest.TestCase):
         cost = cost_usd(MODELS["gpt-6.1-sol"], input_tokens=300_000, output=1_000)
         self.assertAlmostEqual(cost, 300_000 * 2 * 2 / 1e6 + 1_000 * 10 * 1.5 / 1e6)
 
-    def test_glm_usd_prices_and_search(self):
+    def test_glm_usd_prices_and_search_is_billed_by_the_backend(self):
         cost = cost_usd(MODELS["glm-5.3"], input_tokens=1_000_000, cached=200_000, output=100_000, searches=3)
-        self.assertAlmostEqual(cost, 1.12 + 0.052 + 0.44 + 0.03)
+        self.assertAlmostEqual(cost, 1.12 + 0.052 + 0.44)  # 搜索费按所选搜索后端计（Usage.add_local_tools）
 
     def test_claude_api_cache_write(self):
         cost = cost_usd(MODELS["claude-sonnet-5-5"], input_tokens=3_500, cached=2_000, cache_write=500, output=100)

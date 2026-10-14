@@ -11,6 +11,7 @@ from llm import keys
 from llm.models import MODELS, cost_usd
 from llm.providers import zhipu
 from llm.providers.zhipu import ZhipuProvider
+from llm.search import zhipu as zhipu_search_backend
 from llm.types import LLMBlockedError, LLMConfigError, LLMError, LLMPermanentError, LLMQuotaError, LLMRequest
 from tests.llm_fakes import SECRET, FakeSleep, api_error, zp_client, zp_stream
 
@@ -56,7 +57,7 @@ class RequestTests(_Base):
         kw = self.rec.calls[0]
         self.assertEqual((kw["model"], kw["stream"]), ("glm-5.3", True))
         self.assertEqual(kw["response_format"], {"type": "json_object"})
-        self.assertEqual(kw["extra_body"], {"thinking": {"type": "enabled"}, "reasoning_effort": "high"})
+        self.assertEqual(kw["extra_body"], {"thinking": {"type": "enabled"}, "reasoning_effort": "low"})
         self.assertEqual(kw["max_tokens"], SPEC.output_budget)
         self.assertNotIn("tools", kw)
         self.assertNotIn("tool_choice", kw)
@@ -178,7 +179,8 @@ class UsageTests(_Base):
                            zp_stream("答", prompt=1500, cached=1000, completion=100)], _req(tools=("WebSearch",)))
         u = r.model_usage["glm-5.3"]
         self.assertEqual((u["inputTokens"], u["cacheReadInputTokens"], u["outputTokens"]), (1300, 1200, 400))
-        expected = cost_usd(SPEC, 1000, 200, 300) + cost_usd(SPEC, 1500, 1000, 100) + SPEC.search_price
+        search = zhipu_search_backend.PRICE_USD  # 搜索按所选后端（默认智谱）计价
+        expected = cost_usd(SPEC, 1000, 200, 300) + cost_usd(SPEC, 1500, 1000, 100) + search
         self.assertAlmostEqual(r.cost_usd, expected)
         self.assertAlmostEqual(u["costUSD"], expected)
 
