@@ -20,7 +20,7 @@ from tools.verification_registry import load_registry
 
 
 def _ok(text="", data=None):
-    return LLMResult(text=text, data=data, cost_usd=0.01, duration_ms=1000,
+    return LLMResult(text=text, data=data, duration_ms=1000,
                      num_turns=1, session_id="s", model_usage={})
 
 

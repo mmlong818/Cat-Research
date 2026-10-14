@@ -104,7 +104,7 @@ class LoopAskTests(unittest.TestCase):
         self.ask.enabled = True
         self.state, _ = state_with(6.0, 6.2)
         self.before = state_with(6.0)[0]  # 本轮评审前的状态（最优分 6.0）
-        self.usage = {"writer": {"cost_usd": 0.5}}
+        self.usage = {"writer": {"input": 1}}  # consult 的 usage 参数
 
     def start(self):
         """在线程里发起询问；返回 (线程, 结果字典)。"""
@@ -112,7 +112,7 @@ class LoopAskTests(unittest.TestCase):
 
         def target():
             try:
-                self.ask.round_start(2, self.before, self.usage)
+                self.ask.round_start(2, self.before)
                 out["reason"] = self.ask.consult(POLICY, self.state, 2, 6.2, {1: {"violations": ["v"]}}, self.usage)
             except BaseException as e:  # noqa: BLE001
                 out["error"] = e
@@ -127,13 +127,13 @@ class LoopAskTests(unittest.TestCase):
 
     def test_disabled_never_asks(self):
         self.ask.enabled = False
-        self.ask.round_start(2, self.state, self.usage)
+        self.ask.round_start(2, self.state)
         self.assertIsNone(self.ask.consult(POLICY, self.state, 2, 6.2, {}, self.usage))
         self.assertEqual(self.events, [])
 
     def test_not_due_never_asks(self):
         state = LoopState()
-        self.ask.round_start(1, state, self.usage)
+        self.ask.round_start(1, state)
         state.record(0, 7.9, "r1", 0.1)
         self.assertIsNone(self.ask.consult(POLICY, state, 1, 7.9, {}, self.usage))  # 未到最少轮数
         self.assertEqual(self.events, [])
@@ -240,22 +240,21 @@ class LoopAskTests(unittest.TestCase):
         t.join(5)
         self.assertIn("用户选择结束改进", out["reason"])
 
-    def test_estimates_use_average_round_time_and_last_round_cost(self):
+    def test_estimates_use_average_round_time(self):
         self.state = LoopState()
-        usage = {"writer": {"cost_usd": 0.0}}
-        for cycle, (score, took, cost) in enumerate([(6.0, 600, 0.4), (6.5, 1000, 0.6), (6.6, 0, 0)], start=1):
-            self.ask.round_start(cycle, self.state, usage)
+        usage = {"writer": {"input": 1}}
+        for cycle, (score, took) in enumerate([(6.0, 600), (6.5, 1000), (6.6, 0)], start=1):
+            self.ask.round_start(cycle, self.state)
             self.state.record(cycle - 1, score, f"r{cycle}", 0.1)
             if cycle < 3:
                 self.clock.now += took
-                usage["writer"]["cost_usd"] += cost
         out: dict = {}
         t = threading.Thread(target=lambda: out.update(r=self.ask.consult(POLICY, self.state, 3, 6.6, {}, usage)))
         t.start()
         wait_until(lambda: self.ask.pending is not None)
         data = self.events[0][1]
         self.assertEqual(data["est_seconds"], 800)  # (600 + 1000) / 2
-        self.assertAlmostEqual(data["est_cost_usd"], 0.6)  # 近一轮
+        self.assertNotIn("est_cost_usd", data)
         self.ask.answer("continue")
         t.join(5)
 
@@ -263,7 +262,7 @@ class LoopAskTests(unittest.TestCase):
         t, out = self.start()
         data = self.events[0][1]
         self.assertIsNone(data["est_seconds"])
-        self.assertIsNone(data["est_cost_usd"])
+        self.assertNotIn("est_cost_usd", data)
         self.ask.answer("continue")
         t.join(5)
 
@@ -313,6 +312,8 @@ class OrchestratorAskTests(unittest.TestCase):
                          (2, 5, 1, 6.2, 6.2, 0))
         self.assertAlmostEqual(a["gain"], 0.2)
         self.assertIn("est_seconds", a)
+        self.assertNotIn("est_cost_usd", a)
+        self.assertNotIn("cost_usd", self.of("stats")[0])
         self.assertEqual(a["timeout_s"], ASK_TIMEOUT_S)
 
     def test_stop_choice_ends_the_loop_and_final_draft_is_still_selected(self):
@@ -443,7 +444,7 @@ class LoopDecisionApiTests(unittest.TestCase):
         out: dict = {}
 
         def waiter():
-            self.ask.round_start(2, state, {})
+            self.ask.round_start(2, state)
             out["reason"] = self.ask.consult(POLICY, state, 2, 6.2, {}, {})
         t = threading.Thread(target=waiter, daemon=True)
         t.start()
@@ -461,7 +462,7 @@ class LoopDecisionApiTests(unittest.TestCase):
 
     def test_snapshot_carries_the_pending_decision(self):
         state, _ = state_with(6.0, 6.2)
-        t = threading.Thread(target=lambda: (self.ask.round_start(2, state, {}),
+        t = threading.Thread(target=lambda: (self.ask.round_start(2, state),
                                              self.ask.consult(POLICY, state, 2, 6.2, {}, {})), daemon=True)
         t.start()
         wait_until(lambda: self.ask.pending is not None)

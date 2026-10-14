@@ -78,7 +78,6 @@ class FinishMixin(OrchestratorBase):
         cached = sum(u.get("cached_input", 0) for u in self._token_usage.values())
         return {"total_input": total_in, "total_cached_input": cached, "total_output": total_out,
                 "total": total_in + total_out,
-                "cost_usd": round(sum(u["cost_usd"] for u in self._token_usage.values()), 3),
                 "by_agent": self._token_usage}
 
 

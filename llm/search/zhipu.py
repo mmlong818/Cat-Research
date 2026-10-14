@@ -6,7 +6,6 @@ from llm.search.base import RECENCY, SEARCH_COUNT_MAX, SEARCH_QUERY_MAX, PostFn,
 
 ZHIPU_SEARCH_URL = "https://open.bigmodel.cn/api/paas/v4/web_search"
 SEARCH_ENGINE = "search_pro"
-PRICE_USD = 0.01  # 美元/次
 
 
 def _describe(status: int, body: dict) -> str:

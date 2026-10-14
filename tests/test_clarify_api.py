@@ -18,7 +18,7 @@ SUMMARY = {"objective": "对比定价", "scope": "个人版", "key_aspects": ["�
 async def fake_acall(req):
     """替换真正的模型调用，保留 call() → asyncio.run(acall()) 这条同步路径"""
     data = {"message": "先确认两点", "summary": SUMMARY, "ready": False, "confidence": 0.6}
-    return LLMResult(text="", data=data, cost_usd=0, duration_ms=0, num_turns=1, session_id="")
+    return LLMResult(text="", data=data, duration_ms=0, num_turns=1, session_id="")
 
 
 class ClarifyApiTests(unittest.TestCase):

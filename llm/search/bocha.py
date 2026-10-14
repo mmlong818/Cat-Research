@@ -12,7 +12,6 @@ from llm.search.base import RECENCY, PostFn, SearchError, http_post, post_json, 
 
 BOCHA_SEARCH_URL = "https://api.bochaai.com/v1/web-search"
 BOCHA_COUNT_MAX = 50
-PRICE_USD = 0.005  # 美元/次：按 ¥0.036/次折算，第三方资料，待官方核实
 
 
 def search_url() -> str:

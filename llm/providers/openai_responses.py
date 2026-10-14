@@ -1,7 +1,7 @@
 """OpenAI GPT：Responses API。
 
 - 联网：托管 web_search 工具（由 OpenAI 执行搜索，并可打开网页阅读），WebSearch / WebFetch 都映射到它，
-  不需要本地工具循环；max_turns 映射为 max_tool_calls，限制托管工具调用次数（也就限制了搜索费用）。
+  不需要本地工具循环；max_turns 映射为 max_tool_calls，限制托管工具调用次数。
 - 结构化：text.format json_schema（schema 满足 strict 要求时 strict=True）；与 web_search 同用若被拒（400），
   降级为提示词约束 + 本地校验 + 带错误信息重试。
 - 推理强度：reasoning.effort，按能力表映射。限流/5xx 由本层退避（SDK 自身重试关闭，避免叠加）。
@@ -103,7 +103,7 @@ class OpenAIProvider:
             raise to_llm_error(e, LABEL, key, quota_codes=_PERMANENT_CODES) from None
         finally:
             await close_client(client)
-        return LLMResult(text=text, data=data, cost_usd=usage.cost,
+        return LLMResult(text=text, data=data,
                          duration_ms=int((time.monotonic() - started) * 1000), num_turns=usage.calls,
                          session_id=resp_id, model_usage=usage.model_usage())
 

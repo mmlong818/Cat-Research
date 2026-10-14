@@ -230,9 +230,6 @@ export type KeyName = Provider | SearchBackend;
 
 export interface ModelInfo {
   id: string;
-  tier: "low" | "mid" | "high";   // 按输出价粗分的价格档
-  input_price: number;            // 美元 / 百万 token
-  output_price: number;
 }
 
 export interface KeyView {
@@ -249,7 +246,7 @@ export interface ProviderInfo extends KeyView {
   base_url?: string;              // 只有 compat 有
 }
 
-export interface SearchBackendInfo extends KeyView { price_usd: number }
+export type SearchBackendInfo = KeyView;
 
 export interface ProfileChoice { provider: Provider; core: string; support: string }
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon } from "../../components/ui/Icon";
 import { useT } from "../../i18n";
 import { N, rich } from "../../i18n/rich";
-import { f2, usd } from "../../lib/format";
+import { f2 } from "../../lib/format";
 import type { CaseState } from "../../lib/live/model";
 import type { LedgerView } from "../../lib/types";
 import { rawLine } from "./humanize";
@@ -12,7 +12,7 @@ export function Leave() {
   return <div className="fieldset"><div className="leave"><Icon name="bell" /><p>{t("case.leave")}</p></div></div>;
 }
 
-/** 台账：声明、来源、矛盾（来自台账接口）+ 当前最优评分 + 已花费（token_usage 累加） */
+/** 台账：声明、来源、矛盾（来自台账接口）+ 当前最优评分 */
 export function Tally({ s, counts }: { s: CaseState; counts: LedgerView["counts"] | null }) {
   const { t } = useT();
   const scores = s.rounds.map((r) => r.score).filter((x): x is number => x != null);
@@ -24,7 +24,7 @@ export function Tally({ s, counts }: { s: CaseState; counts: LedgerView["counts"
     cells.push([String(s.plan.total), t("case.tally.queries")]);
   }
   if (scores.length) cells.push([f2(Math.max(...scores)), t("case.tally.best")]);
-  cells.push([usd(s.cost), t("case.tally.cost")]);
+  if (!cells.length) return null;
   return (
     <div className="fieldset">
       <div className="flabel">{t("case.tally.title")}<span className="muted">{t("case.tally.meta")}</span></div>

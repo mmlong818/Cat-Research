@@ -46,19 +46,11 @@ class SettingsUpdate(BaseModel):
     clear_keys: list[str] = Field(default_factory=list)      # 要删除 key 的提供方
 
 
-def _tier(output_price: float) -> str:
-    """按输出价（美元/百万 token）粗分价格档，供界面提示。"""
-    return "low" if output_price < 2 else "mid" if output_price < 15 else "high"
-
-
 def models_by_provider() -> dict[str, list[dict]]:
     """能力表里的模型按提供方分组（顺序同注册表）。"""
     grouped: dict[str, list[dict]] = {p: [] for p in PROFILES}
     for spec in MODELS.values():
-        grouped[spec.provider].append({
-            "id": spec.id, "tier": _tier(spec.output_price), "input_price": spec.input_price,
-            "cached_price": spec.cached_price, "output_price": spec.output_price, "context": spec.context,
-        })
+        grouped[spec.provider].append({"id": spec.id, "context": spec.context})
     return grouped
 
 
@@ -83,8 +75,7 @@ def _compat_view(stored: dict) -> dict:
     available = bool(view["has_key"] and cfg["base_url"] and cfg["core"] and cfg["support"])
     return {"needs_key": True, **view, "available": available,
             "defaults": {"core": cfg["core"], "support": cfg["support"]},
-            "models": [{"id": i, "tier": "low", "input_price": 0.0, "cached_price": 0.0, "output_price": 0.0,
-                        "context": 128_000} for i in ids],
+            "models": [{"id": i, "context": 128_000} for i in ids],
             "base_url": cfg["base_url"]}
 
 
@@ -102,7 +93,7 @@ def settings_view() -> dict:
         }
     providers["compat"] = _compat_view(stored)
     current = default_profile()
-    backends = {name: {**_key_view(name, stored), "price_usd": b.price} for name, b in BACKENDS.items()}
+    backends = {name: _key_view(name, stored) for name in BACKENDS}
     return {"default_profile": {"provider": current.provider, "core": current.core, "support": current.support},
             "providers": providers,
             "search": {"backend": keys.selected_search_backend(stored), "backends": backends}}

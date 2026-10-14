@@ -1,7 +1,7 @@
 """Claude（订阅）：经 claude-agent-sdk 调用本机 Claude Code，复用其登录状态。
 
 联网用 Claude Code 内置的 WebSearch / WebFetch，结构化输出用 output_format json_schema，
-推理强度与思考由 Claude Code 处理；费用与用量取 Claude Code 上报的值。
+推理强度与思考由 Claude Code 处理；用量取 Claude Code 上报的值。
 """
 import os
 import shutil
@@ -72,7 +72,6 @@ def _to_result(msg: ResultMessage, req: LLMRequest) -> LLMResult:
     return LLMResult(
         text=msg.result or "",
         data=msg.structured_output,
-        cost_usd=msg.total_cost_usd or 0.0,
         duration_ms=msg.duration_ms,
         num_turns=msg.num_turns,
         session_id=msg.session_id,

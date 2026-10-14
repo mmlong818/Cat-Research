@@ -113,11 +113,10 @@ class LLMAgent:
         cached = sum(u.get("cacheReadInputTokens", 0) for u in usages)
         total_input = sum(u.get("inputTokens", 0) + u.get("cacheCreationInputTokens", 0) for u in usages) + cached
         print(f"✅ 智能体 [{self.name}]{label} 完成（{result.num_turns} 轮，"
-              f"{result.duration_ms / 1000:.0f}s，等价 ${result.cost_usd:.3f}）", flush=True)
+              f"{result.duration_ms / 1000:.0f}s）", flush=True)
         self.emit("token_usage", {
             "model": self.model,
             "total_input": total_input,
             "cached_input": cached,
             "total_output": sum(u.get("outputTokens", 0) for u in usages),
-            "cost_usd": result.cost_usd,
         })

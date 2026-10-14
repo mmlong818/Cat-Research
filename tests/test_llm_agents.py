@@ -16,7 +16,7 @@ from research.ledger import NEITHER, Ledger
 
 
 def _ok(data):
-    return LLMResult(text="", data=data, cost_usd=0.01, duration_ms=1000,
+    return LLMResult(text="", data=data, duration_ms=1000,
                      num_turns=1, session_id="s", model_usage={})
 
 

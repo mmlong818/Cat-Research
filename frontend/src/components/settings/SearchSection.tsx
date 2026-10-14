@@ -20,7 +20,6 @@ function BackendRadio({ name, info, checked, onSelect }: {
       }}
     >
       <div style={{ fontSize: 13, fontWeight: checked ? 700 : 500 }}>{t(`common.search.${name}` as TKey)}</div>
-      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{t("common.search.price", { price: info.price_usd })}</div>
       <div style={{ fontSize: 11, color: info.has_key ? "var(--success)" : "var(--text4)" }}>
         {t(info.has_key ? "common.search.keyOk" : "common.search.keyNone")}
       </div>
@@ -37,10 +36,10 @@ interface Props {
   onClear: (name: SearchBackend) => void;
 }
 
-/** 联网搜索后端：单选（单价、key 状态）+ 所选后端的 key。智谱的 key 与智谱提供方共用，只给说明，不重复放输入框。 */
+/** 联网搜索后端：单选（key 状态）+ 所选后端的 key。智谱的 key 与智谱提供方共用，只给说明，不重复放输入框。 */
 export function SearchSection({ info, backend, inputs, onBackend, onInput, onClear }: Props) {
   const { t } = useT();
-  const extra = backend === "bocha" ? "common.search.bochaNote" : backend === "tavily" ? "common.search.tavilyNote" : null;
+  const extra = backend === "tavily" ? "common.search.tavilyNote" : null;
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={sectionTitle}>{t("common.search.title")}</div>

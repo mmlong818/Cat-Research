@@ -19,7 +19,7 @@ from tools.fact_tools import CROSS_CHECK_SCHEMA, CROSS_CHECK_SYSTEM, EVIDENCE_TI
 
 
 def _ok(data):
-    return LLMResult(text="", data=data, cost_usd=0.0, duration_ms=1, num_turns=1, session_id="s", model_usage={})
+    return LLMResult(text="", data=data, duration_ms=1, num_turns=1, session_id="s", model_usage={})
 
 
 def _adj(side, tier):

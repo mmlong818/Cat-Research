@@ -5,7 +5,7 @@ import { useT, type TKey } from "../../i18n";
 import { N, rich } from "../../i18n/rich";
 import { clock, decisionLeft, type CaseState, type Decision } from "../../lib/live/model";
 import { live, useNow } from "../../lib/live/store";
-import { clockTime, f2, usd } from "../../lib/format";
+import { clockTime, f2 } from "../../lib/format";
 import type { ReviewRound } from "../../lib/types";
 
 const THRESHOLD = 8.0; // config.QUALITY_THRESHOLD
@@ -33,8 +33,7 @@ function Stats({ d, prev }: { d: Decision; prev: number | null }) {
         <span className="v">{d.violations}<small>{t("case.so.violUnit")}</small></span></div>
       <div><span className="l">{t("case.so.eta")}</span>
         {min == null ? <span className="v small">{t("case.so.etaNone")}</span>
-          : <span className="v">{min}<small>{t("case.so.etaUnit")}</small></span>}
-        {d.estCost != null && <span className="hint">{rich(t("case.so.etaCost"), { c: <N>{usd(d.estCost)}</N> })}</span>}</div>
+          : <span className="v">{min}<small>{t("case.so.etaUnit")}</small></span>}</div>
     </div>
   );
 }

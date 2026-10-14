@@ -56,7 +56,6 @@ def _citations(meta: dict) -> dict | None:
 def _entry(session_id: str, task: dict | None, meta: dict | None, fallback_time: str) -> dict:
     task, meta = task or {}, meta or {}
     params = meta.get("resolved_params") or {}
-    usage = meta.get("token_usage")
     return {
         "session_id": session_id,
         "task_id": task.get("task_id"),
@@ -66,7 +65,6 @@ def _entry(session_id: str, task: dict | None, meta: dict | None, fallback_time:
         "final_score": meta.get("final_score"),
         "total_cycles": meta.get("total_cycles"),
         "elapsed_seconds": meta.get("elapsed_seconds"),
-        "cost_usd": usage.get("cost_usd") if isinstance(usage, dict) else None,
         "final_draft": meta.get("final_draft"),
         "best_scored_draft": meta.get("best_scored_draft"),
         "citations": _citations(meta),

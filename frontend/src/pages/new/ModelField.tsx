@@ -15,12 +15,11 @@ function effective(settings: SettingsInfo, c: ModelChoice) {
 function ModelSelect({ label, value, models, onChange }: {
   label: string; value: string; models: SettingsInfo["providers"][Provider]["models"]; onChange: (id: string) => void;
 }) {
-  const { t } = useT();
   return (
     <label className="model-pick-row"><span className="hint">{label}</span>
       <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
         {!models.some((m) => m.id === value) && <option value={value}>{modelName(value)}</option>}
-        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(t, m)}</option>)}
+        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(m)}</option>)}
       </select>
     </label>
   );

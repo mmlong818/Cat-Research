@@ -33,7 +33,7 @@ export type DossierState =
   | { status: "error"; message: string }
   | { status: "ready"; data: Dossier };
 
-/** 会话列表分页，找到这一份的条目（用时、费用、深度、语言、模型都在这里） */
+/** 会话列表分页，找到这一份的条目（用时、深度、语言、模型都在这里） */
 async function findSession(sid: string): Promise<SessionMeta | null> {
   const page = 200;
   for (let offset = 0; ; offset += page) {

@@ -1,4 +1,4 @@
-"""智谱 GLM 提供方：请求构造、本地工具循环、json_object + 本地校验重试、错误码分类与退避、用量与费用。"""
+"""智谱 GLM 提供方：请求构造、本地工具循环、json_object + 本地校验重试、错误码分类与退避、用量。"""
 import asyncio
 import json
 import os
@@ -8,10 +8,9 @@ from unittest import mock
 import openai
 
 from llm import keys
-from llm.models import MODELS, cost_usd
+from llm.models import MODELS
 from llm.providers import zhipu
 from llm.providers.zhipu import ZhipuProvider
-from llm.search import zhipu as zhipu_search_backend
 from llm.types import LLMBlockedError, LLMConfigError, LLMError, LLMPermanentError, LLMQuotaError, LLMRequest
 from tests.llm_fakes import SECRET, FakeSleep, api_error, zp_client, zp_stream
 
@@ -173,16 +172,14 @@ class ErrorTests(_Base):
 
 
 class UsageTests(_Base):
-    def test_usage_and_cost_accumulate_over_the_loop(self):
+    def test_usage_accumulates_over_the_loop(self):
         r = self.run_with([zp_stream(tool_calls=[("WebSearch", '{"query": "q"}')], prompt=1000, cached=200,
                                      completion=300),
                            zp_stream("答", prompt=1500, cached=1000, completion=100)], _req(tools=("WebSearch",)))
         u = r.model_usage["glm-5.3"]
         self.assertEqual((u["inputTokens"], u["cacheReadInputTokens"], u["outputTokens"]), (1300, 1200, 400))
-        search = zhipu_search_backend.PRICE_USD  # 搜索按所选后端（默认智谱）计价
-        expected = cost_usd(SPEC, 1000, 200, 300) + cost_usd(SPEC, 1500, 1000, 100) + search
-        self.assertAlmostEqual(r.cost_usd, expected)
-        self.assertAlmostEqual(u["costUSD"], expected)
+        self.assertEqual(u["webSearchRequests"], 1)
+        self.assertNotIn("costUSD", u)
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ class OrchestratorBase:
         self._user_messages: list[str] = []          # 用户中途注入的消息列表（api/app.py 直接追加）
         self._pause_event = None          # threading.Event，None=不暂停，clear=暂停中
         self._stop_event = None           # threading.Event，set=立即停止
-        self._token_usage: dict[str, dict[str, Any]] = {}            # 各 Agent 用量 {agent: {input, output, cost_usd}}
+        self._token_usage: dict[str, dict[str, Any]] = {}  # 各 Agent 用量 {agent: {input, cached_input, output}}
         self._research_round = 0
         self._research_exhausted = False  # 补充研究零增益后置 True
         self._language = "zh"             # 报告语言，_pipeline 开始时按任务参数设置
@@ -92,11 +92,10 @@ class OrchestratorBase:
         """统计用量并转发进度事件（API 模式）"""
         if event_type == "token_usage":
             u = self._token_usage.setdefault(data.get("agent", "unknown"),
-                                             {"input": 0, "cached_input": 0, "output": 0, "cost_usd": 0.0})
+                                             {"input": 0, "cached_input": 0, "output": 0})
             u["input"] += data.get("total_input", 0)
             u["cached_input"] = u.get("cached_input", 0) + data.get("cached_input", 0)  # 旧检查点没有该字段
             u["output"] += data.get("total_output", 0)
-            u["cost_usd"] += data.get("cost_usd", 0.0)
         if self.progress_callback:
             self.progress_callback(event_type, data)
 

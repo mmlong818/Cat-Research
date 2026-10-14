@@ -19,7 +19,7 @@ import "./cabinet.css";
 function Head() {
   const { t } = useT();
   const cols: [TKey, string][] = [["cabinet.col.id", "w-id"], ["cabinet.col.q", ""], ["cabinet.col.status", "w-st"], ["cabinet.col.score", "w-sc"],
-    ["cabinet.col.rounds", "w-n r"], ["cabinet.col.time", "w-time r"], ["cabinet.col.cost", "w-cost r"], ["cabinet.col.conf", "w-conf r"], ["cabinet.col.ops", "w-ops"]];
+    ["cabinet.col.rounds", "w-n r"], ["cabinet.col.time", "w-time r"], ["cabinet.col.conf", "w-conf r"], ["cabinet.col.ops", "w-ops"]];
   return <thead><tr>{cols.map(([k, cls]) => <th key={k} className={cls}>{k === "cabinet.col.ops" ? <span className="sr">{t(k)}</span> : t(k)}</th>)}</tr></thead>;
 }
 
@@ -28,7 +28,7 @@ function DayRow({ g }: { g: Group }) {
   const d = new Date(`${g.day}T00:00:00`);
   const date = d.toLocaleDateString(locale(lang), { month: lang === "zh" ? "long" : "short", day: "numeric" });
   const week = d.toLocaleDateString(locale(lang), { weekday: "long" });
-  return <tr className="grp"><td colSpan={9}>{date}<span>{week} · {t("cabinet.group", { n: g.items.length })}</span></td></tr>;
+  return <tr className="grp"><td colSpan={8}>{date}<span>{week} · {t("cabinet.group", { n: g.items.length })}</span></td></tr>;
 }
 
 function Legend() {
@@ -126,7 +126,7 @@ export default function CabinetPage() {
         </div>
       </div>
       <table className="il cab"><Head /><tbody>
-        {c.groups.length === 0 && <tr><td colSpan={9}><p className="hint none">{t("cabinet.none")}</p></td></tr>}
+        {c.groups.length === 0 && <tr><td colSpan={8}><p className="hint none">{t("cabinet.none")}</p></td></tr>}
         {c.groups.map((g) => [<DayRow key={g.day} g={g} />, ...g.items.map((s) => <SessionRow key={keyOf(s)} s={s} a={actions} />)])}
       </tbody></table>
       {doomed && (

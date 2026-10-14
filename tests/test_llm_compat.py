@@ -10,7 +10,7 @@ from unittest import mock
 import openai
 
 from llm import keys, providers
-from llm.models import cost_usd, get_spec
+from llm.models import get_spec
 from llm.providers import compat
 from llm.providers.compat import CompatProvider
 from llm.types import LLMConfigError, LLMError, LLMPermanentError, LLMQuotaError, LLMRequest
@@ -58,10 +58,8 @@ class ModelRoutingTests(_Base):
     def test_prefixed_ids_get_a_generated_spec(self):
         self.assertEqual((SPEC.id, SPEC.provider, SPEC.web, SPEC.structured), (MODEL, "compat", "client_tools",
                                                                                "json_object"))
-        self.assertEqual((SPEC.input_price, SPEC.cached_price, SPEC.output_price, SPEC.search_price), (0, 0, 0, 0))
         self.assertEqual((SPEC.context, SPEC.max_output, SPEC.output_budget, SPEC.efforts, SPEC.max_concurrency),
                          (128_000, 0, 0, (), 3))
-        self.assertEqual(cost_usd(SPEC, 1_000_000, 0, 1_000_000), 0)
 
     def test_empty_model_name_is_a_config_error(self):
         with self.assertRaisesRegex(LLMConfigError, "缺少端点里的模型名"):
@@ -77,7 +75,7 @@ class ModelRoutingTests(_Base):
     def test_prefix_is_stripped_before_reaching_the_endpoint(self):
         r = self.run_with([zp_stream("好")], _req())
         self.assertEqual(self.rec.calls[0]["model"], "my-model-v1")
-        self.assertEqual(r.model_usage[MODEL]["costUSD"], 0)  # 用量按带前缀的 ID 记
+        self.assertIn(MODEL, r.model_usage)  # 用量按带前缀的 ID 记
 
 
 class RequestTests(_Base):
@@ -121,11 +119,6 @@ class ToolLoopTests(_Base):
         loop = [zp_stream(tool_calls=[("WebSearch", '{"query": "q"}')]) for _ in range(3)]
         with self.assertRaisesRegex(LLMError, "max_turns"):
             self.run_with(loop, _req(tools=("WebSearch",), max_turns=2))
-
-    def test_search_cost_is_the_only_cost(self):
-        r = self.run_with([zp_stream(tool_calls=[("WebSearch", '{"query": "q"}')]), zp_stream("答")],
-                          _req(tools=("WebSearch",)))
-        self.assertAlmostEqual(r.cost_usd, 0.01)  # 默认后端智谱 0.01 美元/次；token 价格未知按 0
 
 
 class ResponseFormatFallbackTests(_Base):

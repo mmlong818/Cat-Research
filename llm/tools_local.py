@@ -182,7 +182,7 @@ def _int(value, default: int) -> int:
 
 
 class ToolRunner:
-    """执行模型请求的工具调用，返回交给模型的 JSON 文本；记录成功的搜索/抓取次数（计费用）。"""
+    """执行模型请求的工具调用，返回交给模型的 JSON 文本；记录成功的搜索/抓取次数。"""
 
     def __init__(self, search: SearchFn, fetch: FetchFn):
         self._search, self._fetch = search, fetch

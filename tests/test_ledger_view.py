@@ -116,8 +116,8 @@ class LedgerApiTests(unittest.TestCase):
 class ReportTokenUsageTests(unittest.TestCase):
     """V1：报告接口带出 00_session.json 的 token_usage，历史会话也能看到用量。"""
 
-    USAGE = {"total_input": 10, "total_output": 20, "total": 30, "cost_usd": 0.5,
-             "by_agent": {"研究员": {"input": 10, "output": 20, "cost_usd": 0.5}}}
+    USAGE = {"total_input": 10, "total_output": 20, "total": 30,
+             "by_agent": {"研究员": {"input": 10, "output": 20}}}
 
     def setUp(self):
         self.root = tempfile.mkdtemp()

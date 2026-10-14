@@ -82,9 +82,7 @@ class SettingsReadTests(SettingsCase):
             self.assertEqual([m["id"] for m in p["models"]], [i for i, s in MODELS.items() if s.provider == name])
             self.assertEqual(p["defaults"], {"core": PROFILES[name].core, "support": PROFILES[name].support})
         by_id = {m["id"]: m for m in providers["openai"]["models"]}
-        self.assertEqual((by_id["gpt-6-luna"]["tier"], by_id["gpt-6.1-sol"]["tier"], by_id["gpt-6-astra"]["tier"]),
-                         ("low", "mid", "high"))
-        self.assertEqual((by_id["gpt-6.1-sol"]["input_price"], by_id["gpt-6.1-sol"]["output_price"]), (2.0, 10.0))
+        self.assertEqual(set(by_id["gpt-6.1-sol"]), {"id", "context"})  # 不再带价格与价格档
 
     def test_models_endpoint_is_grouped_by_provider(self):
         res = self.client.get("/api/models", headers=HEADERS)

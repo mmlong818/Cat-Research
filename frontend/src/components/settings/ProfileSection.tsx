@@ -2,18 +2,17 @@ import { PROVIDERS } from "../../lib/api";
 import type { ModelInfo, ProfileChoice, Provider, SettingsInfo } from "../../lib/api";
 import { modelLabel, modelName, providerName } from "../../lib/useSettings";
 import { useT } from "../../i18n";
-import { field, label, note } from "./styles";
+import { field, label } from "./styles";
 
 function ModelSelect({ title, tip, value, models, onChange }: {
   title: string; tip: string; value: string; models: ModelInfo[]; onChange: (id: string) => void;
 }) {
-  const { t } = useT();
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <label style={label} title={tip}>{title}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)} style={field}>
         {!models.some((m) => m.id === value) && <option value={value}>{modelName(value)}</option>}
-        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(t, m)}</option>)}
+        {models.map((m) => <option key={m.id} value={m.id}>{modelLabel(m)}</option>)}
       </select>
     </div>
   );
@@ -72,15 +71,12 @@ export function ProfileSection({ settings, draft, ready, compatModels, onChange 
           {t("common.compat.profileLine", { core: compatModels.core || "-", support: compatModels.support || "-" })}
         </div>
       ) : (
-        <>
-          <div style={{ display: "flex", gap: 8 }}>
-            <ModelSelect title={t("common.coreModel")} tip={t("common.coreModelTip")} value={draft.core} models={models}
-              onChange={(core) => onChange({ ...draft, core })} />
-            <ModelSelect title={t("common.supportModel")} tip={t("common.supportModelTip")} value={draft.support} models={models}
-              onChange={(support) => onChange({ ...draft, support })} />
-          </div>
-          <div style={{ ...note, marginTop: 6, marginBottom: 0 }}>{t("common.priceHint")}</div>
-        </>
+        <div style={{ display: "flex", gap: 8 }}>
+          <ModelSelect title={t("common.coreModel")} tip={t("common.coreModelTip")} value={draft.core} models={models}
+            onChange={(core) => onChange({ ...draft, core })} />
+          <ModelSelect title={t("common.supportModel")} tip={t("common.supportModelTip")} value={draft.support} models={models}
+            onChange={(support) => onChange({ ...draft, support })} />
+        </div>
       )}
     </div>
   );

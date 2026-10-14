@@ -11,7 +11,6 @@ from llm.search.base import PostFn, SearchError, http_post, post_json, trim
 
 TAVILY_SEARCH_URL = "https://api.tavily.com/search"
 TAVILY_COUNT_MAX = 20
-PRICE_USD = 0.008  # 美元/次
 _TIME_RANGE = {"oneDay": "day", "oneWeek": "week", "oneMonth": "month", "oneYear": "year"}  # noLimit 不传
 
 

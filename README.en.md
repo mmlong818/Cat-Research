@@ -30,7 +30,7 @@ By default it calls Claude through the Claude Code CLI you are logged into on yo
 - **Source tiers**: Tier 1–4 plus a 0–100 domain score; low-credibility sources are flagged and checked first.
 - **Review and revise**: the critic scores 7 dimensions and the conclusion validator scores 5, both against your request. Revisions build on the best draft so far (a ratchet), with extra research when a review asks for it.
 - **Step in mid-run**: pause, resume, stop, or add a requirement; it reaches every agent that works after it.
-- **A dossier you can audit**: findings, full text, evidence, rulings, the score trail and every draft can be browsed and downloaded in the UI, along with token usage and cost.
+- **A dossier you can audit**: findings, full text, evidence, rulings, the score trail and every draft can be browsed and downloaded in the UI, along with token usage.
 
 ## Quick start
 
@@ -98,11 +98,11 @@ Up to 2 research runs at once. The UI switches between Chinese and English and s
 |-------|----------|---------------|----------------------|-----------------|------------------------|--------------|
 | Quick `quick` | 6 | 1 | 0 | 8 | 0 | about a quarter of an hour |
 | Standard `standard` (default) | 10 | 2–3 | 2 | 12 | 3 | about 40 minutes |
-| Deep `deep` | 15 | 2–5 | 3 | 16 | 5 | 45–80 minutes, $15–$35 |
+| Deep `deep` | 15 | 2–5 | 3 | 16 | 5 | 45–80 minutes |
 
 You can also pick "custom rounds": searches as in Standard, with your own minimum and maximum number of revision rounds.
 
-> A measured run (not a guarantee): one Standard run in October 2026 ("open-source LLM coding ability compared") took 40 minutes and cost $17.51; it read 103 sources, extracted 346 claims, ruled on 8 contradictions and went through 3 review rounds.
+> A measured run (not a guarantee): one Standard run in October 2026 ("open-source LLM coding ability compared") took 40 minutes; it read 103 sources, extracted 346 claims, ruled on 8 contradictions and went through 3 review rounds.
 
 ### Command line
 
@@ -133,18 +133,18 @@ Other providers work too; the call layer routes by model ID:
 | OpenAI-compatible | your own, recorded as `compat:<model name>` | local tool loop (selected search service + local page fetching) | json_object (falls back to the prompt when unsupported) + local validation | `COMPAT_API_KEY` |
 
 - **In the UI**: in Settings, choose the default provider and its core and support models, and enter API keys (stored in the system credential store; the page shows only the last 4 characters). When signing a request you can switch provider or pick a specific model for that run; the choice is recorded in the audit log. Without the needed key the API returns 400 before creating the task. Replays keep the session's original provider and models.
-- **OpenAI-compatible endpoint**: in Settings, fill in the base URL, API key and the core and support model names, then click "Test connection" to confirm it connects and the model supports tool calling (function calling); models without it cannot be used for research. These models are not in the capability table, so only search cost is counted, not token prices.
+- **OpenAI-compatible endpoint**: in Settings, fill in the base URL, API key and the core and support model names, then click "Test connection" to confirm it connects and the model supports tool calling (function calling); models without it cannot be used for research.
 - **With environment variables or `settings.json`**: `CORE_MODEL` / `SUPPORT_MODEL` (take precedence), or copy `settings.example.json` to `settings.json` and fill in `core_model` / `support_model`.
 
 ### Web search
 
 Claude and OpenAI use their own web access; Zhipu and the OpenAI-compatible endpoint use the search service chosen in Settings (page content is always fetched locally):
 
-| Search service | Price | API key | Notes |
-|----------------|-------|---------|-------|
-| Zhipu Search API (default) | $0.01 / call | same as the Zhipu API key | |
-| Bocha | about $0.005 / call | `BOCHA_API_KEY` | reachable directly from mainland China; price is an estimate |
-| Tavily | $0.008 / call | `TAVILY_API_KEY` | free monthly credits; may need a proxy from mainland China |
+| Search service | API key | Notes |
+|----------------|---------|-------|
+| Zhipu Search API (default) | same as the Zhipu API key | |
+| Bocha | `BOCHA_API_KEY` | reachable directly from mainland China |
+| Tavily | `TAVILY_API_KEY` | free monthly credits; may need a proxy from mainland China |
 
 ## How it works
 
@@ -197,7 +197,7 @@ Each run creates a session folder under `workspace/`:
 
 ```
 workspace/session_20261007_133450/
-├── 00_session.json               # Session metadata (status, models, duration, usage and cost)
+├── 00_session.json               # Session metadata (status, models, duration and usage)
 ├── 01_question.txt               # Question and request notes
 ├── 03_plan.json                  # Search plan
 ├── 04_clarification/             # Clarification result

@@ -46,10 +46,8 @@ class SettingsReadTests(SettingsCase):
         self.assertEqual(entry["key_preview"], f"...{SECRET[-4:]}")
         self.assertEqual(entry["defaults"], {"core": "compat:big", "support": "compat:small"})
         self.assertEqual(entry["models"], [
-            {"id": "compat:big", "tier": "low", "input_price": 0.0, "cached_price": 0.0, "output_price": 0.0,
-             "context": 128_000},
-            {"id": "compat:small", "tier": "low", "input_price": 0.0, "cached_price": 0.0, "output_price": 0.0,
-             "context": 128_000}])
+            {"id": "compat:big", "context": 128_000},
+            {"id": "compat:small", "context": 128_000}])
         self.assertNotIn(SECRET, json.dumps(self.get()))
 
     def test_available_needs_all_of_base_url_key_core_and_support(self):
@@ -72,13 +70,13 @@ class SettingsReadTests(SettingsCase):
         with mock.patch.dict("os.environ", {"COMPAT_BASE_URL": "http://localhost:11434/v1"}):
             self.assertEqual(self.get()["providers"]["compat"]["base_url"], "http://localhost:11434/v1")
 
-    def test_search_section_defaults_to_zhipu_with_prices(self):
+    def test_search_section_defaults_to_zhipu_without_prices(self):
         search = self.get()["search"]
         self.assertEqual(search["backend"], "zhipu")
         self.assertEqual(search["backends"], {
-            "zhipu": {"has_key": False, "key_source": "", "key_preview": "", "price_usd": 0.01},
-            "bocha": {"has_key": False, "key_source": "", "key_preview": "", "price_usd": 0.005},
-            "tavily": {"has_key": False, "key_source": "", "key_preview": "", "price_usd": 0.008}})
+            "zhipu": {"has_key": False, "key_source": "", "key_preview": ""},
+            "bocha": {"has_key": False, "key_source": "", "key_preview": ""},
+            "tavily": {"has_key": False, "key_source": "", "key_preview": ""}})
 
     def test_search_keys_report_source_and_preview(self):
         config_store.save_config({"bocha_api_key": BOCHA_KEY})

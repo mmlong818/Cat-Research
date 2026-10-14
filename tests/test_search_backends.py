@@ -1,5 +1,5 @@
 """联网搜索后端：博查 / Tavily 的请求与解析、缺字段宽容、限流退避、额度与 Key 无效不重试、recency 映射；
-后端注册表与所选后端解析；按所选后端计费。"""
+后端注册表与所选后端解析。"""
 import asyncio
 import json
 import os
@@ -9,11 +9,9 @@ from unittest import mock
 import requests  # type: ignore[import-untyped]  # 未安装 types-requests 存根
 
 from llm import keys
-from llm.models import MODELS, cost_usd
-from llm.providers.zhipu import ZhipuProvider
 from llm.search import BACKENDS, base, bocha, get_search, selected_backend, tavily
-from llm.types import LLMConfigError, LLMRequest
-from tests.llm_fakes import SECRET, FakeSleep, zp_client, zp_stream
+from llm.types import LLMConfigError
+from tests.llm_fakes import SECRET, FakeSleep
 
 BOCHA_OK = {"code": 200, "data": {"webPages": {"value": [
     {"name": "标题", "url": "https://a.cn/x", "siteName": "甲站", "datePublished": "2026-08-26T08:00:00+08:00",
@@ -197,9 +195,9 @@ class TavilyTests(_Isolated):
 
 
 class RegistryTests(_Isolated):
-    def test_backends_prices_and_labels(self):
+    def test_backends_and_labels(self):
         self.assertEqual(list(BACKENDS), ["zhipu", "bocha", "tavily"])
-        self.assertEqual({n: b.price for n, b in BACKENDS.items()}, {"zhipu": 0.01, "bocha": 0.005, "tavily": 0.008})
+        self.assertEqual([b.label for b in BACKENDS.values()], ["智谱搜索", "博查搜索", "Tavily 搜索"])
 
     def test_selected_backend_config_beats_environment_beats_default(self):
         self.assertEqual(selected_backend(), "zhipu")
@@ -208,10 +206,10 @@ class RegistryTests(_Isolated):
             with mock.patch.object(keys, "stored_config", return_value={"search": {"backend": "bocha"}}):
                 self.assertEqual(selected_backend(), "bocha")
 
-    def test_get_search_binds_the_key_and_reports_price_and_label(self):
+    def test_get_search_binds_the_key_and_reports_label(self):
         with mock.patch.object(keys, "stored_config", return_value={"bocha_api_key": SECRET}):
-            fn, price, label = get_search("bocha", sleep=self.sleep)
-        self.assertEqual((price, label), (0.005, "博查搜索"))
+            fn, label = get_search("bocha", sleep=self.sleep)
+        self.assertEqual(label, "博查搜索")
         poster = Poster((200, BOCHA_OK))
         with mock.patch.object(bocha, "http_post", poster):
             out = run(fn("q", 3, "oneDay"))
@@ -220,7 +218,7 @@ class RegistryTests(_Isolated):
 
     def test_errors_never_echo_the_key(self):
         with mock.patch.object(keys, "stored_config", return_value={"tavily_api_key": SECRET}):
-            fn, _, _ = get_search("tavily", sleep=self.sleep)
+            fn, _ = get_search("tavily", sleep=self.sleep)
         poster = Poster((401, {"detail": {"error": f"bad key {SECRET}"}}))
         with mock.patch.object(tavily, "http_post", poster):
             out = run(fn("q", 3, "noLimit"))
@@ -232,30 +230,6 @@ class RegistryTests(_Isolated):
             get_search("duckduckgo")
         with self.assertRaisesRegex(LLMConfigError, "BOCHA_API_KEY"):
             get_search("bocha")
-
-
-class BillingTests(_Isolated):
-    """client_tools 提供方按所选搜索后端的单价计费，不再看模型规格。"""
-
-    def cost_with(self, backend: str | None) -> tuple[float, int]:
-        client, _ = zp_client([zp_stream(tool_calls=[("WebSearch", '{"query": "q"}')]), zp_stream("答")])
-
-        async def search(query, count, recency):
-            return {"results": []}
-
-        provider = ZhipuProvider(make_client=lambda key: client, sleep=self.sleep, search=search)
-        with mock.patch.dict(os.environ, {"SEARCH_BACKEND": backend or "", "ZHIPU_API_KEY": SECRET}):
-            r = run(provider.run(LLMRequest(prompt="p", system="s", model="glm-5.3", tools=("WebSearch",)),
-                                 MODELS["glm-5.3"]))
-        token_cost = cost_usd(MODELS["glm-5.3"], 100, 0, 20) * 2  # zp_stream 默认每轮 100 输入 / 20 输出
-        return r.cost_usd - token_cost, r.model_usage["glm-5.3"]["webSearchRequests"]
-
-    def test_search_cost_follows_the_selected_backend(self):
-        for backend, price in ((None, 0.01), ("zhipu", 0.01), ("bocha", 0.005), ("tavily", 0.008)):
-            with self.subTest(backend):
-                extra, searches = self.cost_with(backend)
-                self.assertEqual(searches, 1)
-                self.assertAlmostEqual(extra, price)
 
 
 if __name__ == "__main__":

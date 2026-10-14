@@ -232,7 +232,6 @@ class ResearchOrchestrator(ImproveLoopMixin, FinishMixin):
 
     def _phase_finish(self, question, strategy, state: LoopState, sv, fc, report_file, final: dict) -> str:
         elapsed = time.time() - self._started_at
-        cost = sum(u["cost_usd"] for u in self._token_usage.values())
         final_file = os.path.join(self._ws, "09_final.md")
         draft, check = final["draft"], final["check"]
         score = state.reviewed.get(draft, 0.0)
@@ -247,7 +246,6 @@ class ResearchOrchestrator(ImproveLoopMixin, FinishMixin):
             "total_sources": sv["total_sources"],
             "final_score": round(score, 1),
             "elapsed_seconds": round(elapsed),
-            "cost_usd": round(cost, 3),
             **citations,
         })
         self._update_status("completed", {
@@ -262,7 +260,7 @@ class ResearchOrchestrator(ImproveLoopMixin, FinishMixin):
               f"📊 质量分数历程: {' → '.join(f'{s:.1f}' for s in state.scores)}\n"
               f"🏆 最终采用: 第 {draft} 版（{score:.1f}）| 引用 {citations['cited_claims']} 条声明，"
               f"违规 {citations['violations']} 处\n"
-              f"⏱️  总耗时: {elapsed / 60:.1f} 分钟 | 💰 等价费用: ${cost:.2f}\n"
+              f"⏱️  总耗时: {elapsed / 60:.1f} 分钟\n"
               f"📁 工作空间: {self._ws}\n📄 最终报告: {final_file}\n"
               f"📋 置信度报告: {report_file}", flush=True)
         return read_text(final_file)

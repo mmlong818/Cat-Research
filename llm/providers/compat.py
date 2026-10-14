@@ -1,7 +1,7 @@
 """OpenAI 兼容端点：任意一个支持 function calling 的 chat.completions 服务（base_url、key、模型名由用户配置）。
 
 通用逻辑见 chat_completions，这里只放兼容端点的差异：
-- 模型 ID 写作 compat:<端点里的模型名>，发给端点时去掉前缀；价格未知按 0 计（费用只含搜索）。
+- 模型 ID 写作 compat:<端点里的模型名>，发给端点时去掉前缀。
 - 不传 max_tokens、thinking（不同厂商参数各异，传了反而可能被拒）。
 - 推理强度按智能体的 effort 原样传顶层 reasoning_effort：部分模型不传时默认最高强度思考，
   实测 GLM-5.3 同一请求不传 954s、传 high 22s。

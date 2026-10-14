@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { config, PROVIDERS, type ModelInfo, type SettingsInfo } from "./api";
-import { translate, type TFunc, type TKey } from "../i18n";
+import { translate, type TKey } from "../i18n";
 
 const CHANGED = "cat-settings-changed";
 
@@ -26,7 +26,5 @@ export const providerName = (p: string | null | undefined): string =>
 /** compat 模型 ID 形如 "compat:名字"，界面只显示名字。 */
 export const modelName = (id: string): string => id.replace(/^compat:/, "");
 
-/** 下拉里的模型文案：型号 · 价格（美元/百万 token，输入/输出）；withTier 时再加价格档。兼容端点不计 token 价格，只显示名字。 */
-export const modelLabel = (t: TFunc, m: ModelInfo, withTier = true): string =>
-  m.id.startsWith("compat:") ? modelName(m.id)
-    : `${m.id} · $${m.input_price}/$${m.output_price}${withTier ? ` · ${t(`common.tier.${m.tier}` as TKey)}` : ""}`;
+/** 下拉里的模型文案：只显示型号名。 */
+export const modelLabel = (m: ModelInfo): string => modelName(m.id);

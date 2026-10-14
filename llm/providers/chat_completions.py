@@ -19,7 +19,7 @@ from llm.models import ModelSpec
 from llm.providers.openai_common import close_client, is_transient, openai_sdk, to_llm_error
 from llm.retry import Sleep, with_backoff
 from llm.schema import MAX_REPAIRS, parse_valid, repair_instruction, schema_instruction
-from llm.search import BACKENDS, get_search, selected_backend
+from llm.search import get_search
 from llm.tools_local import FetchFn, SearchFn, ToolRunner, fetch_page, function_tools
 from llm.types import LLMBlockedError, LLMError, LLMPermanentError, LLMRequest, LLMResult
 from llm.usage import Usage
@@ -123,7 +123,7 @@ class ChatCompletionsProvider:
         key = require_key(vendor.key_name)
         openai = openai_sdk()
         client = self._make_client(key)
-        search, search_price = self._search_for(req)
+        search = self._search_for(req)
         runner = ToolRunner(search=search, fetch=self._fetch or fetch_page)
         usage, started = Usage(spec), time.monotonic()
         try:
@@ -134,20 +134,19 @@ class ChatCompletionsProvider:
             raise LLMError(f"{vendor.label} 流式输出中断（network_error），退避重试后仍失败") from None
         finally:
             await close_client(client)
-        usage.add_local_tools(runner.searches, runner.fetches, search_price)
-        return LLMResult(text=text, data=data, cost_usd=usage.cost,
+        usage.add_local_tools(runner.searches, runner.fetches)
+        return LLMResult(text=text, data=data,
                          duration_ms=int((time.monotonic() - started) * 1000), num_turns=usage.calls,
                          session_id="", model_usage=usage.model_usage())
 
-    def _search_for(self, req: LLMRequest) -> tuple[SearchFn, float]:
-        """所选搜索后端的搜索函数与单价；注入的 search 优先（测试用），计价仍按所选后端。"""
-        backend = selected_backend()
+    def _search_for(self, req: LLMRequest) -> SearchFn:
+        """所选搜索后端的搜索函数；注入的 search 优先（测试用）。"""
         if self._search:
-            return self._search, BACKENDS[backend].price if backend in BACKENDS else 0.0
+            return self._search
         if "WebSearch" not in req.tools:
-            return _no_search, 0.0  # 不联网的请求不要求搜索 key
-        search, price, _ = get_search(backend, sleep=self._sleep)
-        return search, price
+            return _no_search  # 不联网的请求不要求搜索 key
+        search, _ = get_search(sleep=self._sleep)
+        return search
 
     async def _answer(self, client, req: LLMRequest, spec: ModelSpec, tools: list[dict], runner: ToolRunner,
                       usage: Usage) -> tuple[str, Any]:

@@ -4,7 +4,6 @@ import { locale, type Lang } from "../i18n";
 export const crId = (sid: string) => `CR-${sid.replace("_", "-")}`;
 
 export const f2 = (x: number) => x.toFixed(2);
-export const usd = (x: number) => `$${x.toFixed(2)}`;
 export const minutes = (sec: number) => Math.round(sec / 60);
 
 /** 后端时间是不带时区的本地时间（ISO），按本地时间解析。 */

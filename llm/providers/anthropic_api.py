@@ -81,6 +81,6 @@ class AnthropicApiProvider:
             data = parse_valid(text, req.schema) if req.schema else None
         except ValueError as e:
             raise LLMError(f"Anthropic 结构化输出未通过本地校验：{e}") from None
-        return LLMResult(text=text, data=data, cost_usd=usage.cost,
+        return LLMResult(text=text, data=data,
                          duration_ms=int((time.monotonic() - started) * 1000), num_turns=1,
                          session_id=getattr(resp, "id", ""), model_usage=usage.model_usage())
