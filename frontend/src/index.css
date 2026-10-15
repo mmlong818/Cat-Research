@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* 设置弹窗（SettingsModal）用到的变量名做成令牌的别名，让它跟着浅色 / 深色切换 */
+:root {
+  --surface: var(--c-surface);
+  --surface2: var(--c-sunk);
+  --border: var(--c-rule);
+  --text: var(--c-text);
+  --text3: var(--c-text-3);
+  --text4: var(--c-text-disabled);
+  --success: var(--c-success);
+  --danger: var(--c-danger);
+  --accent: var(--c-accent);
+  --accent-hover: var(--c-accent-fill);
+  --accent-dim: var(--c-accent-soft);
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-field); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-text-disabled); }

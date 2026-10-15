@@ -1,0 +1,421 @@
+/* 卷宗页：封面、页签索引、证据、裁决、过程、附件。正文与旁注在 gloss.css */
+.dossier-loading {
+  margin-top: var(--s-10);
+}
+
+/* ---------- 声明编号 [C#]：按状态着色，非「未单独核查」带图标 ---------- */
+.cc {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin: 0 1px;
+  padding: 0 3px;
+  height: 17px;
+  vertical-align: 1px;
+  border-radius: var(--r-tag);
+  font: var(--fw-medium) 10.5px/17px var(--font-num);
+  color: var(--c-accent);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--d-hover) var(--ease-out);
+}
+button.cc,
+a.cc {
+  cursor: pointer;
+}
+.cc:hover,
+.cc.on {
+  background: var(--c-accent-soft);
+  text-decoration: none;
+}
+.cc .ic {
+  width: 9px;
+  height: 9px;
+  stroke-width: 26;
+  vertical-align: 0;
+}
+.cc.supported {
+  color: var(--c-gold-text);
+}
+.cc.disputed {
+  color: var(--c-warn);
+}
+.cc.overruled {
+  color: var(--c-danger);
+}
+.cc.unverifiable {
+  color: var(--c-text-2);
+}
+.cc.ext {
+  color: var(--c-text-3);
+}
+
+/* ---------- 封面 ---------- */
+.front {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  margin-top: var(--s-11);
+}
+.lead {
+  padding-right: calc(var(--col-gap) + 4px);
+  min-width: 0;
+}
+.lead h2 {
+  font: var(--fw-heavy) var(--t-display) / var(--lh-head) var(--font-head);
+  margin: var(--s-5) 0 var(--s-6);
+  letter-spacing: var(--ls-head);
+  text-wrap: balance;
+}
+@media (min-width: 641px) {
+  .lead h2 .nw {
+    white-space: nowrap;
+  }
+}
+.lead .dek {
+  font-size: var(--t-dek);
+  line-height: 1.75;
+  color: var(--c-text-2);
+  max-width: 58ch;
+}
+.conc {
+  list-style: none;
+  counter-reset: c;
+  margin-top: var(--s-9);
+  border-top: var(--e-rule);
+}
+.conc li {
+  counter-increment: c;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--s-4);
+  padding: var(--s-6) 0;
+  border-bottom: var(--e-rule);
+}
+.conc li::before {
+  content: counter(c);
+  font: var(--fw-heavy) 20px/1.2 var(--font-head);
+  color: var(--c-text-3);
+}
+.conc b {
+  font: var(--fw-bold) var(--t-item-lg) / 1.5 var(--font-head);
+  display: block;
+}
+.conc p {
+  font-size: var(--t-body-sm);
+  line-height: 1.75;
+  color: var(--c-text-2);
+  margin-top: 2px;
+}
+.acts {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: var(--s-9);
+  flex-wrap: wrap;
+}
+.acts .btn .num {
+  font-size: var(--t-meta);
+}
+.side {
+  border-left: var(--e-rule);
+  padding-left: calc(var(--col-gap) - 4px);
+  min-width: 0;
+}
+.side .score-big {
+  margin-top: var(--s-7);
+}
+.side-block {
+  margin-top: 22px;
+}
+.side-block > .conf-note {
+  margin-top: var(--s-5);
+}
+.conf-note {
+  margin-top: var(--s-6);
+  font-size: var(--t-body-sm);
+  line-height: 1.75;
+  color: var(--c-text-2);
+}
+.conf-note strong {
+  color: var(--c-text);
+}
+.side .jbars {
+  margin-top: var(--s-7);
+}
+.jbars .jrow {
+  display: contents;
+}
+.formula {
+  margin-top: var(--s-4);
+}
+.gap {
+  padding: var(--s-5) 0;
+  border-top: var(--e-rule);
+  font-size: var(--t-meta);
+  line-height: 1.65;
+  color: var(--c-text-2);
+}
+.side-h + .gap {
+  border-top: 0;
+}
+.gap .hd {
+  display: flex;
+  gap: var(--s-4);
+  align-items: baseline;
+  color: var(--c-text);
+}
+.gap .sg {
+  color: var(--c-text-3);
+  margin-top: 2px;
+}
+.srcs {
+  list-style: none;
+  counter-reset: s;
+}
+.srcs li {
+  counter-increment: s;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  padding: 6px 0;
+  border-top: var(--e-rule);
+  font-size: var(--t-meta);
+  overflow-wrap: anywhere;
+}
+.side-h + .srcs li:first-child {
+  border-top: 0;
+}
+.srcs li::before {
+  content: counter(s);
+  font: 11px/20px var(--font-num);
+  color: var(--c-text-3);
+}
+.srcs a {
+  color: var(--c-accent);
+}
+.sections {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: var(--s-12);
+  padding-top: var(--s-2);
+  border-top: var(--e-double-top);
+}
+.col {
+  padding: 0 calc(var(--col-gap) / 2 + 4px);
+  border-left: var(--e-rule);
+  min-width: 0;
+}
+.col:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.col:last-child {
+  padding-right: 0;
+}
+.col-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--s-6) 0 var(--s-5);
+  border-bottom: 1px solid var(--c-rule-strong);
+}
+.col-h h3 {
+  font: var(--fw-heavy) var(--t-h3) / 1 var(--font-head);
+}
+.col-h span {
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+.item {
+  padding: var(--s-6) 0 var(--s-5);
+}
+.item p {
+  font-size: var(--t-meta);
+  line-height: 1.65;
+  color: var(--c-text-2);
+}
+.rest {
+  display: inline-flex;
+  gap: var(--s-2);
+  align-items: center;
+  margin-top: var(--s-3);
+  font-size: var(--t-body-sm);
+  color: var(--c-accent);
+}
+
+/* ---------- 内页：左侧编号页签索引 + 内容 ---------- */
+.dos {
+  display: grid;
+  grid-template-columns: var(--toc-w) minmax(0, 1fr);
+  gap: 0 var(--col-gap);
+  margin-top: var(--s-10);
+}
+.dos-body {
+  min-width: 0;
+}
+.idx {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  list-style: none;
+  max-height: calc(100vh - var(--bar-h) - 32px);
+  overflow: auto;
+  border-top: var(--e-rule-strong);
+  scrollbar-width: thin;
+}
+.idx > li > a {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: var(--e-rule);
+  font-size: var(--t-body-sm);
+  color: var(--c-text-2);
+  text-decoration: none;
+}
+.idx > li > a .no {
+  font-size: 11px;
+  color: var(--c-text-3);
+}
+.idx > li > a .c {
+  font-size: 11.5px;
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+.idx > li > a:hover {
+  color: var(--c-text);
+}
+.idx > li > a.on {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+.idx > li > a.on .no {
+  color: var(--c-text);
+}
+.toc {
+  list-style: none;
+  padding: var(--s-2) 0 var(--s-4) 26px;
+  border-bottom: var(--e-rule);
+}
+.toc button {
+  display: block;
+  width: 100%;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-text-3);
+}
+.toc button:hover {
+  color: var(--c-accent);
+}
+.toc button.cur {
+  color: var(--c-text);
+  font-weight: var(--fw-medium);
+}
+
+/* ---------- 证据小条（旁注、证据台账展开行共用） ---------- */
+.ev-k {
+  margin-top: var(--s-6);
+  font-size: 11.5px;
+  color: var(--c-text-3);
+}
+.ev-src {
+  margin-top: var(--s-3);
+  padding-top: var(--s-4);
+  border-top: var(--e-rule);
+  font-size: var(--t-meta);
+  overflow-wrap: anywhere;
+}
+.ev-src .sid {
+  font-size: 11px;
+  color: var(--c-text-3);
+  margin-right: var(--s-3);
+}
+.ev-src a {
+  color: var(--c-accent);
+  font-size: var(--t-body-sm);
+}
+.ev-src .meta {
+  color: var(--c-text-3);
+  font-size: 11.5px;
+}
+.ev-q {
+  margin-top: var(--s-2);
+  padding-left: var(--s-5);
+  border-left: 2px solid var(--c-rule);
+  color: var(--c-text-2);
+  font-size: var(--t-meta);
+  line-height: 1.6;
+}
+.ev-note {
+  margin-top: 2px;
+  font-size: var(--t-meta);
+  line-height: 1.65;
+  color: var(--c-text-2);
+}
+.ev-why {
+  margin-top: var(--s-5);
+  font-size: var(--t-meta);
+  color: var(--c-text-3);
+  line-height: 1.6;
+}
+.ev-more {
+  margin-top: var(--s-4);
+  font-size: var(--t-meta);
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 960px) {
+  .front,
+  .dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lead {
+    padding-right: 0;
+  }
+  .side {
+    border-left: 0;
+    padding-left: 0;
+    margin-top: var(--s-12);
+    padding-top: var(--s-8);
+    border-top: var(--e-rule-strong);
+  }
+  .sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sections .col {
+    border-left: 0;
+    padding: 0 var(--s-6) 0 0;
+  }
+  .idx {
+    position: static;
+    max-height: none;
+    display: flex;
+    overflow-x: auto;
+    border-top: 0;
+    border-bottom: var(--e-rule);
+    margin-bottom: var(--s-6);
+    scrollbar-width: none;
+  }
+  .idx > li > a {
+    grid-template-columns: auto auto;
+    gap: var(--s-3);
+    margin-right: var(--s-9);
+    border-bottom: 0;
+    white-space: nowrap;
+  }
+  .idx > li > a .c,
+  .idx .toc {
+    display: none;
+  }
+  .idx > li > a.on {
+    box-shadow: inset 0 -2px 0 var(--c-text);
+  }
+}
+@media (max-width: 640px) {
+  .lead h2 {
+    font-size: 26px;
+  }
+  .sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

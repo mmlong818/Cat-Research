@@ -1,0 +1,358 @@
+/* 卷宗内页：证据台账、裁决、过程、附件 */
+/* ---------- 证据台账 ---------- */
+.ledger-x {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--col-gap);
+  margin-top: var(--s-6);
+  font-size: var(--t-body-sm);
+  color: var(--c-text-2);
+  line-height: 1.7;
+}
+.ledger-x b {
+  color: var(--c-text);
+}
+.ev-hint {
+  margin-top: var(--s-4);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ev-merged {
+  margin-top: var(--s-8);
+}
+.ev-search {
+  width: 320px;
+  max-width: 100%;
+}
+.ctab {
+  table-layout: fixed;
+}
+.ctab .w-id {
+  width: 64px;
+}
+.ctab .w-st {
+  width: 112px;
+}
+.ctab .w-src {
+  width: 96px;
+}
+.ctab tr {
+  cursor: pointer;
+}
+.ctab td.c button {
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  color: var(--c-text);
+}
+.ctab .en {
+  color: var(--c-text);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.ctab .zh {
+  margin-top: 3px;
+  color: var(--c-text-3);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ctab td.sc {
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+}
+.ctab tr.open td,
+.ctab tr.det td {
+  background: var(--c-sunk);
+}
+.ctab tr.det {
+  cursor: default;
+}
+.ctab tr.det td {
+  padding-top: 0;
+}
+.ev-empty {
+  padding: var(--s-10) 0;
+}
+
+/* ---------- 裁决 ---------- */
+.vd-intro {
+  font-size: var(--t-body);
+}
+.vd {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--s-8);
+  padding: var(--s-9) 0;
+  border-bottom: var(--e-rule);
+}
+.vd .no {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-3);
+  align-content: start;
+}
+.vd .no b {
+  font: var(--fw-heavy) 22px/1.2 var(--font-head);
+  color: var(--c-text);
+}
+.vd h4 {
+  font: var(--fw-bold) var(--t-item-lg) / 1.5 var(--font-head);
+}
+.vd .ab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: var(--s-6);
+  border-top: var(--e-rule);
+}
+.vd .ab > div {
+  padding: var(--s-5) var(--s-6) var(--s-5) 0;
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+  line-height: 1.6;
+  min-width: 0;
+}
+.vd .ab > div + div {
+  padding-left: var(--s-6);
+  border-left: var(--e-rule);
+}
+.vd .side-k {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+.vd .side-k .num {
+  color: var(--c-text);
+  font-size: 12px;
+}
+.vd .en {
+  margin-top: 4px;
+  color: var(--c-text);
+}
+.vd .src {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--c-accent);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.vd .why {
+  margin-top: var(--s-5);
+  font-size: var(--t-body-sm);
+  line-height: 1.75;
+  color: var(--c-text-2);
+  max-width: 72ch;
+}
+.vd .more {
+  margin-top: var(--s-4);
+}
+
+/* ---------- 过程 ---------- */
+.block {
+  margin-top: var(--s-12);
+}
+.chart {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  display: block;
+  margin-top: var(--s-6);
+  overflow: visible;
+}
+.chart text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  fill: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+.chart .n {
+  font-family: var(--font-num);
+}
+.chart .lbl {
+  fill: var(--c-text);
+  font-weight: 500;
+}
+.chart .ln {
+  fill: none;
+  stroke: var(--c-text);
+  stroke-width: 2;
+}
+.chart .gd {
+  stroke: var(--c-rule);
+  stroke-width: 1;
+}
+.chart .th {
+  stroke: var(--c-text-3);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.chart .pt {
+  fill: var(--c-text);
+  stroke: var(--c-bg);
+  stroke-width: 2;
+}
+.chart .pt.best {
+  fill: var(--c-gold);
+}
+.chart .hit {
+  fill: transparent;
+  cursor: help;
+}
+.tbl {
+  overflow-x: auto;
+}
+.dims {
+  border-top: 0;
+  min-width: 520px;
+}
+.dims td.num .tick {
+  vertical-align: middle;
+  margin-left: 5px;
+}
+.round {
+  border-bottom: var(--e-rule);
+}
+.round > button {
+  display: grid;
+  grid-template-columns: 70px 1fr auto 20px;
+  align-items: baseline;
+  gap: var(--s-5);
+  width: 100%;
+  padding: var(--s-6) 0;
+}
+.round > button b {
+  font: var(--fw-bold) var(--t-item) / 1.4 var(--font-head);
+}
+.round > button .muted {
+  font-size: var(--t-meta);
+}
+.round .bd {
+  padding: 0 0 var(--s-9) 70px;
+  display: grid;
+  gap: var(--s-6);
+}
+.round .bd h5 {
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  color: var(--c-text-3);
+}
+.issue-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: var(--s-4);
+  padding: 6px 0;
+  border-top: var(--e-rule);
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+  line-height: 1.65;
+}
+.issue-row .muted {
+  display: block;
+  margin-top: 2px;
+}
+.plain-ol {
+  margin: 4px 0 0 1.3em;
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+  line-height: 1.7;
+  list-style: decimal;
+}
+.proc-why {
+  font-size: var(--t-body);
+}
+.jbars.usage {
+  margin-top: var(--s-7);
+  max-width: 560px;
+}
+
+/* ---------- 附件 ---------- */
+.files {
+  margin-top: var(--s-6);
+  border-top: 0;
+  min-width: 640px;
+}
+.files .w-score {
+  width: 110px;
+}
+.files .w-time {
+  width: 80px;
+}
+.files .w-ops {
+  width: 190px;
+}
+.files .tag {
+  margin-left: var(--s-3);
+}
+.files .ops {
+  white-space: nowrap;
+}
+.fn {
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.fn .num {
+  font-size: 12px;
+}
+.kicker .fn {
+  color: var(--c-text-3);
+  font-weight: var(--fw-regular);
+}
+.draft-msg {
+  margin-top: var(--s-8);
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 960px) {
+  .ledger-x {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+  }
+}
+@media (max-width: 640px) {
+  .vd {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+  }
+  .vd .no {
+    display: flex;
+    align-items: center;
+  }
+  .vd .ab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vd .ab > div + div {
+    border-left: 0;
+    padding-left: 0;
+    border-top: var(--e-rule);
+  }
+  .round > button {
+    grid-template-columns: 56px 1fr 20px;
+  }
+  .round > button .sc {
+    display: none;
+  }
+  .round .bd {
+    padding-left: 0;
+  }
+  .ctab thead {
+    display: none;
+  }
+  .ctab,
+  .ctab tbody,
+  .ctab tr,
+  .ctab td {
+    display: block;
+    width: 100%;
+  }
+  .ctab tr {
+    padding: var(--s-5) 0;
+    border-bottom: var(--e-rule);
+  }
+  .ctab td {
+    border: 0;
+    padding: 2px 0;
+  }
+  .ctab tr.det td:first-child {
+    display: none;
+  }
+}

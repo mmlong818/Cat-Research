@@ -1,0 +1,214 @@
+/* 基础样式；末尾是窄屏令牌与内联图标 */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: var(--fw-regular) var(--t-body) / var(--lh-ui) var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/* 衬线标题：缺字重时不伪加粗（中文粗宋体被伪加粗会糊成一团） */
+h1,
+h2,
+h3,
+h4 {
+  font-synthesis: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+}
+
+button {
+  cursor: pointer;
+  text-align: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--e-focus);
+  border-radius: var(--r-ctl);
+}
+
+/* 数字等宽：只把数字包进这个类，不要把汉字也放进来（等宽字体里的汉字字距会被撑开） */
+.num,
+.mono {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+.muted {
+  color: var(--c-text-3);
+}
+.wrap {
+  max-width: calc(var(--grid-max) + var(--page-x) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-x) var(--s-16);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  padding: var(--s-7) 0;
+}
+.filters .sp {
+  flex: 1;
+}
+
+/* 分段控件：顶栏主题切换 */
+.seg {
+  display: inline-flex;
+  border: var(--e-rule);
+  border-radius: var(--r-ctl);
+}
+.seg button {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 var(--s-3);
+  color: var(--c-text-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  font-size: var(--t-meta);
+  transition:
+    color var(--d-hover) var(--ease-out),
+    background var(--d-hover) var(--ease-out);
+}
+.seg button + button {
+  border-left: var(--e-rule);
+}
+.seg button:hover {
+  color: var(--c-text);
+}
+.seg button.on {
+  color: var(--c-text);
+  background: var(--c-sunk);
+  font-weight: var(--fw-medium);
+}
+
+@keyframes a-live {
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.55 0.1 258 / 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 7px oklch(0.55 0.1 258 / 0);
+  }
+}
+@keyframes a-slide {
+  from {
+    transform: translateX(var(--slide-in));
+    opacity: 0;
+  }
+}
+@keyframes a-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes a-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+@keyframes a-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- Cat-Research 新增 ---------- */
+:root {
+  --rail-w: 272px;
+  --rail-mini: 56px;
+}
+@media (max-width: 640px) {
+  :root {
+    --page-x: 16px;
+    --col-gap: 20px;
+    --t-masthead: 28px;
+    --t-display: 26px;
+    --t-num-xl: 36px;
+    --folio-w: 100vw;
+  }
+}
+
+/* Phosphor 风格内联图标（256 网格，细线） */
+.ic {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  vertical-align: -3px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ic .f {
+  fill: currentColor;
+  stroke: none;
+}
+.ic.sm {
+  width: 12px;
+  height: 12px;
+  stroke-width: 18;
+  vertical-align: -1px;
+}

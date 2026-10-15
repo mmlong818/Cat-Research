@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["frontend", "workspace", "static", "build-dist"]
+
+[tool.ruff.lint]
+# 规则集沿用 cat-research-v2；S110/S112/E722 禁止静默吞掉异常
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "S110", "S112"]
+
+[tool.ruff.lint.per-file-ignores]
+# 有意为之：必须先 reconfigure stdout/stderr 为 UTF-8（Windows GBK 控制台 emoji 兼容），之后才能 import 会打印输出的子模块
+"orchestrator.py" = ["E402"]
+# 有意为之：必须先改 sys.stdout 编码、插入 sys.path、load_dotenv 之后才能 import 依赖这些环境的模块
+"run_api.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["."]
+exclude = ["^frontend/", "^workspace/", "^static/", "^build-dist/"]
+ignore_missing_imports = true

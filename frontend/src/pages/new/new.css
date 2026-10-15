@@ -1,0 +1,417 @@
+/* 委托台：步骤条；第 1 步一句话问题框、示例、对话笔录（单栏、阅读宽度）；第 2 步全宽委托单 */
+
+/* 步骤条：1 说清问题 → 2 核对委托单 → 签发 */
+.steps {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  margin-top: var(--s-8);
+  font-size: var(--t-body-sm);
+  color: var(--c-text-3);
+}
+.steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  white-space: nowrap;
+}
+.steps .no {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-round);
+  border: 1px solid var(--c-field);
+  font-size: 11px;
+}
+.steps li.on {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+.steps li.on .no {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+.steps li.done {
+  color: var(--c-text-2);
+}
+.steps li.done .no {
+  border-color: var(--c-text-2);
+}
+.steps .arrow {
+  color: var(--c-text-disabled);
+}
+
+/* 第 1 步：单栏，按阅读宽度，不铺满 */
+.step-col {
+  max-width: 720px;
+}
+.step-col > .talk-h {
+  margin-top: var(--s-10);
+}
+.skip-line {
+  margin-top: var(--s-5);
+}
+.skip-line .btn--link {
+  margin-left: var(--s-3);
+  font-size: var(--t-meta);
+}
+.proceed {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+  margin-top: var(--s-10);
+  padding-top: var(--s-7);
+  border-top: var(--e-rule-strong);
+}
+.proceed .hint {
+  min-width: 0;
+}
+.proceed .sp {
+  flex: 1;
+}
+.ready-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--c-accent);
+  font-size: var(--t-meta);
+  font-weight: var(--fw-medium);
+}
+.btn.is-ready {
+  box-shadow: 0 0 0 3px var(--c-accent-soft);
+}
+
+/* 第 2 步：只读的对话记录 */
+.chatlog {
+  margin-top: var(--s-8);
+  padding-bottom: var(--s-5);
+  border-bottom: var(--e-rule);
+}
+.chatlog-toggle {
+  padding: 0;
+}
+.chatlog .talk {
+  max-width: 720px;
+  margin-top: var(--s-5);
+  border-top: var(--e-rule-strong);
+}
+.review-h {
+  margin-top: var(--s-11);
+}
+.review-grid {
+  margin-top: var(--s-4);
+}
+
+.ask-big {
+  font: var(--fw-heavy) var(--t-h2) / 1.3 var(--font-head);
+  margin-top: var(--s-12);
+}
+.qbox {
+  margin-top: var(--s-7);
+  border: var(--e-field);
+  border-radius: var(--r-ctl);
+  background: var(--c-bg);
+  padding: var(--s-6) var(--s-7);
+  transition:
+    border-color var(--d-hover) var(--ease-out),
+    box-shadow var(--d-hover) var(--ease-out);
+}
+.qbox:focus-within {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 1px var(--c-accent);
+}
+.qbox textarea {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  outline: none;
+  font-size: var(--t-item);
+  line-height: 1.7;
+}
+.qbox textarea::placeholder {
+  color: var(--c-text-3);
+}
+.qbox .row {
+  margin-top: var(--s-4);
+  align-items: flex-end;
+}
+.qbox .row .hint {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.qbox .row .btn {
+  flex: none;
+}
+
+/* 示例问题：编号 + 衬线问题 + 为什么好 */
+.brief {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 2px var(--s-5);
+  width: 100%;
+  padding: 11px var(--s-2) 11px 0;
+  border-top: var(--e-rule);
+  text-align: left;
+}
+.sec-h + .brief {
+  border-top: 0;
+}
+.brief .rk {
+  font: var(--fw-medium) 12px/22px var(--font-num);
+  color: var(--c-text-3);
+}
+.brief h4 {
+  font: var(--fw-bold) 15.5px / var(--lh-title) var(--font-head);
+  transition: color var(--d-hover) var(--ease-out);
+}
+.brief:hover h4 {
+  color: var(--c-accent);
+}
+.brief .meta {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+
+/* 编号步骤：好问题的三个要素、签发之后 */
+.mech {
+  list-style: none;
+  counter-reset: s;
+  border-left: var(--e-rule);
+  margin: var(--s-7) 0 0 7px;
+}
+.mech li {
+  position: relative;
+  padding: 0 0 var(--s-5) var(--s-10);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--c-text-2);
+  counter-increment: s;
+}
+.mech li::before {
+  content: counter(s);
+  position: absolute;
+  left: -8px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-round);
+  background: var(--c-bg);
+  border: 1px solid var(--c-text-3);
+  font: var(--fw-medium) 10px/14px var(--font-num);
+  text-align: center;
+  color: var(--c-text-2);
+}
+.mech li:last-child::before {
+  background: var(--c-gold);
+  border-color: var(--c-gold);
+  color: var(--c-on-gold);
+}
+.mech li b {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+
+/* 对话笔录 */
+.talk-h {
+  margin-top: var(--s-2);
+}
+.talk {
+  list-style: none;
+}
+.talk > li {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: var(--s-6);
+  padding: var(--s-7) 0;
+  border-bottom: var(--e-rule);
+}
+.talk .who {
+  font-size: var(--t-meta);
+  color: var(--c-text-3);
+  padding-top: 3px;
+  white-space: nowrap;
+}
+.talk > li.me .who {
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+}
+.talk .said {
+  font-size: var(--t-read);
+  line-height: 1.75;
+  color: var(--c-text-2);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.talk > li.me .said {
+  color: var(--c-text);
+}
+.talk .said.thinking {
+  color: var(--c-text-3);
+}
+.talk .said.thinking::after {
+  content: '…';
+  animation: a-fade 900ms var(--ease-out) infinite alternate;
+}
+.talk .fx {
+  margin-top: var(--s-3);
+  font-size: var(--t-meta);
+  color: var(--c-accent);
+  display: flex;
+  gap: var(--s-3);
+  align-items: center;
+}
+.reply {
+  display: flex;
+  gap: var(--s-4);
+  align-items: flex-end;
+  margin-top: var(--s-7);
+}
+.reply .input {
+  flex: 1;
+  height: auto;
+  min-height: 38px;
+  padding: 7px var(--s-5);
+  align-items: flex-end;
+}
+.reply textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  outline: none;
+  line-height: 22px;
+  font-size: var(--t-body-sm);
+}
+
+/* 委托单 */
+.cf {
+  padding: var(--s-7) 0;
+  border-bottom: var(--e-rule);
+}
+.cf .flabel {
+  margin-bottom: var(--s-3);
+}
+.cf .flabel .tag {
+  font-weight: var(--fw-regular);
+}
+.ents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.ents .chip {
+  height: 26px;
+  font-size: var(--t-meta);
+}
+.ents-add {
+  flex: 1;
+  min-width: 160px;
+  height: 28px;
+}
+.model-line {
+  font-size: var(--t-body-sm);
+  color: var(--c-text-2);
+}
+.model-line .num {
+  color: var(--c-text);
+  font-size: var(--t-meta);
+}
+.model-line .sep {
+  display: inline-block;
+  width: var(--s-6);
+}
+.model-pick {
+  display: grid;
+  gap: var(--s-4);
+  margin-top: var(--s-5);
+  padding: var(--s-6) var(--s-7);
+  background: var(--c-sunk);
+  border-radius: var(--r-ctl);
+}
+.model-pick-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-4);
+}
+
+/* 第 2 步底部：左边回去再聊，右边签发（吸在页面底部） */
+.review-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--s-6);
+  flex-wrap: wrap;
+  margin-top: var(--s-10);
+  padding: var(--s-7) 0;
+  background: var(--c-bg);
+  border-top: var(--e-rule-strong);
+}
+.review-bar .sp {
+  flex: 1;
+}
+.sign-side {
+  display: flex;
+  align-items: center;
+  gap: var(--s-6);
+  min-width: 0;
+}
+.sign-side .hint {
+  max-width: 420px;
+  text-align: right;
+}
+.full-note {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  max-width: 460px;
+  color: var(--c-warn);
+  font-size: var(--t-meta);
+  line-height: 1.65;
+}
+.full-note > .ic {
+  margin-top: 3px;
+}
+.full-note .btn--link {
+  font-size: var(--t-meta);
+  margin-left: var(--s-3);
+}
+.form-err {
+  flex-basis: 100%;
+  margin-top: var(--s-4);
+  color: var(--c-danger);
+  font-size: var(--t-meta);
+}
+
+@media (max-width: 640px) {
+  .talk > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-2);
+  }
+  .review-bar .sp {
+    display: none;
+  }
+  .sign-side {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .sign-side .hint {
+    text-align: left;
+  }
+  .proceed .sp {
+    display: none;
+  }
+  .qbox .row .hint {
+    flex-basis: 100%;
+  }
+  .qbox .row .sp {
+    display: none;
+  }
+}

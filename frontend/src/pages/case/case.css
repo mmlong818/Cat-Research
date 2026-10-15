@@ -1,0 +1,427 @@
+/* 办案记录：9 阶段时间线、复审签批单、办案控制与补充指令回执 */
+
+.runq {
+  font: var(--fw-heavy) var(--t-h2) / 1.35 var(--font-head);
+  margin-top: var(--s-8);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.stages-h {
+  margin-top: var(--s-2);
+}
+.signoff + .stages-h,
+.so-receipt + .stages-h {
+  margin-top: var(--s-11);
+}
+
+/* ---------- 时间线 ---------- */
+.tl {
+  list-style: none;
+  margin-top: var(--s-3);
+}
+.tl > li {
+  display: grid;
+  grid-template-columns: 62px 22px minmax(0, 1fr) auto;
+  align-items: start;
+  min-height: 40px;
+}
+.tl > li > .t {
+  font: var(--fw-regular) 12px/22px var(--font-num);
+  color: var(--c-text-3);
+}
+.tl .rail {
+  position: relative;
+  height: 100%;
+  min-height: 40px;
+}
+.tl .rail::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--c-rule);
+}
+.tl > li.done .rail::before {
+  background: var(--c-text);
+  width: 1.5px;
+}
+.tl > li:first-child .rail::before {
+  top: 11px;
+}
+.tl > li:last-child .rail::before {
+  bottom: calc(100% - 11px);
+}
+.tl .rail i {
+  position: absolute;
+  left: 6px;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-text-3);
+}
+.tl > li.done .rail i {
+  background: var(--c-text);
+  border-color: var(--c-text);
+}
+.tl > li.active .rail i {
+  left: 5px;
+  top: 6px;
+  width: 11px;
+  height: 11px;
+  border-radius: var(--r-round);
+  border: 2px solid var(--c-accent);
+  animation: a-live var(--d-live) var(--ease-out) infinite;
+}
+.tl > li.halted .rail i {
+  border-color: var(--c-warn);
+  background: var(--c-warn-soft);
+}
+.tl .l {
+  padding: 1px 0 var(--s-7) var(--s-3);
+  min-width: 0;
+}
+.tl .l > b {
+  font: var(--fw-bold) 14.5px/20px var(--font-head);
+}
+.tl .l > span {
+  display: block;
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+  line-height: 1.6;
+}
+.tl > li.pending .l > b,
+.tl > li.pending .l > span {
+  color: var(--c-text-3);
+}
+.tl > li.active .l > b {
+  color: var(--c-accent);
+}
+.tl > li.halted .l > b {
+  color: var(--c-warn);
+}
+.tl .dur {
+  font-size: var(--t-meta);
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text-3);
+  white-space: nowrap;
+  padding-left: var(--s-4);
+}
+
+/* 归档的产物 */
+.att {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-7);
+  margin-top: var(--s-3);
+}
+.att > span,
+.att button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--c-text-2);
+}
+.att button:hover {
+  color: var(--c-accent);
+}
+.att .num {
+  color: var(--c-text);
+  font-size: 12px;
+}
+.qlist {
+  list-style: none;
+  margin-top: var(--s-4);
+  border-top: var(--e-rule);
+}
+.qlist li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: var(--s-4);
+  padding: 6px 0;
+  border-bottom: var(--e-rule);
+  font-size: var(--t-meta);
+}
+.qlist .num {
+  color: var(--c-text-3);
+}
+.qlist .q {
+  color: var(--c-text);
+}
+.qlist .p {
+  color: var(--c-text-3);
+  font-size: 12px;
+}
+
+/* 阶段下的动态、改进各轮 */
+.sub {
+  list-style: none;
+  margin-top: var(--s-4);
+  display: grid;
+  gap: 3px;
+}
+.sub li {
+  display: grid;
+  grid-template-columns: 54px 16px minmax(0, 1fr);
+  gap: var(--s-3);
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+  line-height: 1.6;
+}
+.sub li .t {
+  font: 11.5px/20px var(--font-num);
+  color: var(--c-text-3);
+}
+.sub li > .ic {
+  margin-top: 3px;
+  width: 13px;
+  height: 13px;
+}
+.sub li.now {
+  color: var(--c-accent);
+  font-weight: var(--fw-medium);
+}
+.sub li.warn {
+  color: var(--c-warn);
+}
+.sub .tick {
+  margin-left: var(--s-2);
+  vertical-align: 3px;
+}
+
+/* ---------- 复审签批单：吸顶，双线开头，靠位置与版面重量而不是颜色 ---------- */
+.signoff {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--c-bg);
+  padding: var(--s-2) 0 var(--s-8);
+  margin-top: var(--s-2);
+  border-bottom: var(--e-rule-strong);
+}
+.signoff .double {
+  margin-top: 0;
+}
+.so-h {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-6);
+  margin-top: var(--s-7);
+  flex-wrap: wrap;
+}
+.so-h h3 {
+  font: var(--fw-heavy) var(--t-h2) / 1.2 var(--font-head);
+}
+.so-h .sp {
+  flex: 1;
+}
+.so-h .cd {
+  font-size: var(--t-body);
+  font-weight: var(--fw-semibold);
+}
+.so-sub {
+  font-size: var(--t-body-sm);
+  color: var(--c-text-2);
+  margin-top: var(--s-3);
+}
+.so-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--s-7);
+}
+.so-stats > div {
+  padding: 0 var(--s-6);
+  border-left: var(--e-rule);
+  min-width: 0;
+}
+.so-stats > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.so-stats .l {
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+.so-stats .v {
+  font: 600 var(--t-num-lg) / 1.25 var(--font-num);
+  display: block;
+  margin-top: 2px;
+}
+.so-stats .v.small {
+  font: var(--fw-regular) var(--t-body-sm) / 1.6 var(--font-ui);
+  color: var(--c-text-3);
+}
+.so-stats .v small {
+  font: var(--fw-regular) 12px var(--font-ui);
+  color: var(--c-text-3);
+  margin-left: 3px;
+}
+.so-stats .mark {
+  margin: var(--s-3) 0 0;
+}
+.so-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-7);
+  font-size: 12px;
+  color: var(--c-text-3);
+  flex-wrap: wrap;
+}
+.so-trail b {
+  font-family: var(--font-num);
+  font-weight: var(--fw-medium);
+  color: var(--c-text);
+}
+.so-trail .ic {
+  width: 12px;
+  height: 12px;
+}
+.so-trail .q {
+  color: var(--c-accent);
+}
+.so-why {
+  margin-top: var(--s-6);
+  font-size: var(--t-meta);
+  color: var(--c-text-2);
+}
+.so-why ol {
+  margin: 2px 0 0 1.3em;
+}
+.so-acts {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: var(--s-8);
+  flex-wrap: wrap;
+}
+
+/* ---------- 回执：签批之后、补充指令 ---------- */
+.receipt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px var(--s-5);
+  padding: var(--s-5) 0;
+  border-top: var(--e-rule);
+  font-size: var(--t-meta);
+}
+.receipt > .num {
+  color: var(--c-text-3);
+}
+.receipt > .ic {
+  color: var(--c-success);
+  margin-top: 3px;
+}
+.receipt p {
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+.receipt .hint,
+.receipt .rc-steps {
+  grid-column: 2;
+}
+.receipt .hint.err {
+  color: var(--c-danger);
+}
+.so-receipt {
+  margin-top: var(--s-6);
+  border-bottom: var(--e-rule);
+}
+.rc-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-7);
+  margin-top: 2px;
+}
+.rc-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c-text-3);
+}
+.rc-steps li.on {
+  color: var(--c-success);
+  font-weight: var(--fw-medium);
+}
+
+/* ---------- 右栏：离开提示、台账、原始日志 ---------- */
+.leave {
+  display: flex;
+  gap: var(--s-5);
+  align-items: flex-start;
+  font-size: 13.5px;
+}
+.leave > .ic {
+  margin-top: 3px;
+  color: var(--c-text-3);
+}
+.tally {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: var(--s-4);
+  border-top: var(--e-rule);
+}
+.tally div {
+  padding: var(--s-5) 0;
+  border-bottom: var(--e-rule);
+  min-width: 0;
+}
+.tally div:nth-child(odd) {
+  padding-right: var(--s-6);
+  border-right: var(--e-rule);
+}
+.tally div:nth-child(even) {
+  padding-left: var(--s-6);
+}
+.tally .n {
+  font: 600 var(--t-num-lg) / 1.1 var(--font-num);
+  display: block;
+}
+.tally .l {
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+.fieldset.last {
+  border-bottom: 0;
+}
+.log-toggle {
+  padding: 0;
+}
+.code.log {
+  max-height: 420px;
+  overflow: auto;
+  font-size: 11.5px;
+}
+
+@media (max-width: 960px) {
+  .so-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-6) 0;
+  }
+  .so-stats > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 640px) {
+  .tl > li {
+    grid-template-columns: 50px 22px minmax(0, 1fr);
+  }
+  .tl .dur {
+    grid-column: 3;
+    padding-left: var(--s-3);
+    margin-top: -6px;
+    margin-bottom: 4px;
+  }
+  .so-h h3 {
+    font-size: var(--t-h3);
+  }
+  .signoff {
+    position: static;
+  }
+}

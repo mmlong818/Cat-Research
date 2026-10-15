@@ -1,0 +1,4 @@
+{
+  "core_model": "claude-opus-5-5",
+  "support_model": "claude-sonnet-5-5"
+}

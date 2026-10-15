@@ -1,0 +1,151 @@
+/* 档案柜：在办置顶、按日期分组的卷宗表 */
+
+.pin {
+  margin-top: var(--s-10);
+}
+.pin .il.top {
+  border-top: 0;
+}
+.cabinet .filters {
+  margin-top: var(--s-6);
+}
+.cabinet .input.search {
+  width: 300px;
+  max-width: 100%;
+}
+.cab td {
+  vertical-align: top;
+}
+.cab th.w-id {
+  width: 150px;
+}
+.cab th.w-st {
+  width: 140px;
+}
+.cab th.w-sc {
+  width: 100px;
+}
+.cab th.w-n {
+  width: 58px;
+}
+.cab th.w-time {
+  width: 76px;
+}
+.cab th.w-conf {
+  width: 60px;
+}
+.cab th.w-ops {
+  width: 84px;
+}
+.cab tr.grp td {
+  padding: var(--s-9) 0 var(--s-3);
+  border-bottom: 1px solid var(--c-rule-strong);
+  background: none;
+  font: var(--fw-bold) 14px/1.3 var(--font-head);
+  color: var(--c-text);
+}
+.cab tr.grp td span {
+  font: var(--fw-regular) 12px var(--font-ui);
+  color: var(--c-text-3);
+  margin-left: var(--s-4);
+}
+.cab .t h3 {
+  font: var(--fw-bold) var(--t-item) / 1.5 var(--font-head);
+  overflow-wrap: anywhere;
+}
+.cab .qlink {
+  font: inherit;
+  text-align: left;
+  transition: color var(--d-hover) var(--ease-out);
+}
+.cab .qlink:hover {
+  color: var(--c-accent);
+}
+.cab .t .meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--c-text-3);
+  display: flex;
+  gap: var(--s-2) var(--s-6);
+  flex-wrap: wrap;
+}
+.cab .t .meta .num {
+  color: var(--c-text-2);
+}
+.cab .t .why {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--c-text-2);
+}
+.cab td.c {
+  font: var(--fw-medium) 12px var(--font-num);
+  white-space: nowrap;
+  color: var(--c-text-2);
+}
+.cab td.r {
+  white-space: nowrap;
+}
+.cab .ops {
+  white-space: nowrap;
+  text-align: right;
+}
+.cab .iconbtn:disabled {
+  color: var(--c-text-disabled);
+  background: none;
+  cursor: not-allowed;
+}
+.cab tr.is-live td {
+  background: var(--c-accent-soft);
+}
+.cab .none {
+  padding: var(--s-8) 0;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-6) var(--s-10);
+  margin-top: var(--s-7);
+}
+.legend .hint {
+  display: inline-flex;
+  gap: var(--s-4);
+  align-items: center;
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 窄屏：表格改成一条一块 */
+@media (max-width: 640px) {
+  .cab thead {
+    display: none;
+  }
+  .cab,
+  .cab tbody,
+  .cab tr,
+  .cab td {
+    display: block;
+    width: 100%;
+  }
+  .cab tr {
+    padding: var(--s-5) 0;
+    border-bottom: var(--e-rule);
+  }
+  .cab td {
+    border: 0;
+    padding: 2px 0;
+  }
+  .cab td.r,
+  .cab .ops {
+    text-align: left;
+  }
+  .cab tr.grp {
+    padding: 0;
+    border: 0;
+  }
+}

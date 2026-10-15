@@ -1,0 +1,297 @@
+/*
+ * 设计令牌（窄屏令牌与内联图标在 base.css）
+ * 用法：本文件只放令牌；组件样式在各组件自己的 .css 里，只引用这里的变量。
+ *
+ * 版面语法：报头、双线、栏线、字号与字重分层；不用卡片阴影做层级。
+ * 语义铁律：
+ *   墨（--c-text）  = 正文与主操作（主按钮是墨色实底，像报纸的黑）
+ *   油墨蓝（accent）= 链接、进行中、焦点、信息提示
+ *   琥珀（gold）    = 沉淀下来的价值：分数标记。不做警示，不做装饰
+ *   警示 warn 用焦橙、危险 danger 用朱砂，都不借琥珀；任何状态都要"颜色 + 图标或文字"双通道
+ *
+ * 对比度（WCAG）：
+ *   浅色：正文 16.6 / 次要 8.8 / 弱 5.3 / 油墨蓝 6.0 / 琥珀文字 5.5 / 成功 5.4 / 警示 4.9 / 危险 5.3 / 表单描边 3.35
+ *   深色：正文 14.7 / 次要 9.1 / 弱 5.4 / 油墨蓝 7.6 / 琥珀文字 9.2 / 成功 7.5 / 警示 7.3 / 危险 6.1 / 表单描边 3.3
+ */
+
+:root {
+  /* ============================ 颜色 · 浅色（日报） ============================ */
+  --c-bg: oklch(0.985 0.003 265);
+  --c-surface: oklch(0.995 0.002 265);
+  --c-sunk: oklch(0.962 0.005 265);
+  --c-sunk-2: oklch(0.94 0.006 265);
+  --c-scrim: oklch(0.22 0.02 265 / 0.30);
+
+  --c-text: oklch(0.22 0.022 265);
+  --c-text-2: oklch(0.40 0.018 265);
+  --c-text-3: oklch(0.52 0.016 265);
+  --c-text-disabled: oklch(0.70 0.01 265);
+  --c-on-primary: var(--c-bg);
+
+  --c-rule: oklch(0.87 0.01 265);
+  --c-rule-strong: oklch(0.24 0.022 265);
+  --c-field: oklch(0.63 0.015 265);
+  --c-field-hover: oklch(0.50 0.016 265);
+
+  --c-primary: var(--c-text);
+  --c-primary-hover: oklch(0.30 0.024 265);
+
+  --c-accent: oklch(0.49 0.10 258);
+  --c-accent-fill: oklch(0.538 0.095 258);
+  --c-accent-soft: oklch(0.94 0.025 258);
+  --c-on-accent: oklch(0.985 0.004 258);
+
+  --c-gold: oklch(0.74 0.145 72);
+  --c-gold-text: oklch(0.52 0.12 62);
+  --c-gold-soft: oklch(0.74 0.145 72 / 0.14);
+  --c-on-gold: oklch(0.25 0.024 264);
+
+  --c-success: oklch(0.50 0.12 152);
+  --c-success-soft: oklch(0.50 0.12 152 / 0.10);
+  --c-warn: oklch(0.55 0.16 50);
+  --c-warn-soft: oklch(0.55 0.16 50 / 0.10);
+  --c-danger: oklch(0.54 0.17 28);
+  --c-danger-soft: oklch(0.54 0.17 28 / 0.08);
+  --c-info: var(--c-accent);
+  --c-info-soft: var(--c-accent-soft);
+
+  /* 分数色阶：阈值取自后端设置 reject_threshold、veto_score，前端不写死另一套 */
+  --c-score-5: oklch(0.62 0.14 78);
+  --c-score-4: var(--c-gold);
+  --c-score-3: oklch(0.82 0.09 76);
+  --c-score-2: oklch(0.80 0.012 265);
+  --c-score-1: oklch(0.70 0.10 28);
+
+  --c-fb-up: var(--c-accent);
+  --c-fb-down: var(--c-danger);
+  --c-fb-star: var(--c-gold);
+
+  --c-run-queued: var(--c-text-3);
+  --c-run-running: var(--c-accent);
+  --c-run-paused: var(--c-warn);
+  --c-run-stopped: var(--c-text-3);
+  --c-run-done: var(--c-text-2);
+  --c-run-failed: var(--c-danger);
+  --c-run-cancelled: var(--c-text-3);
+
+  /* ============================ 字体 ============================ */
+  /* 衬线标题：只用于"内容标题"。思源宋体 700/900 本地打包（见 fonts.css），
+     回退刻意跳过 SimSun——没有打包字体可用时，Windows 自带宋体没有粗体会被伪加粗糊成一团，
+     直接落到粗黑体，版面降级但不难看。 */
+  --font-head: 'Noto Serif SC', 'Source Han Serif CN', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+  /* UI 黑体：不打包，直接用系统字体栈 */
+  --font-ui: 'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  /* 数字等宽：分数、计数、时间、模型 ID。中文不得落在这个字体上 */
+  --font-num: 'IBM Plex Mono', 'JetBrains Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
+
+  --t-caption: 11.5px;
+  --t-meta: 12.5px;
+  --t-body-sm: 13px;
+  --t-body: 14px;
+  --t-read: 14.5px;
+  --t-item: 15px;
+  --t-item-lg: 16px;
+  --t-dek: 16px;
+  --t-h3: 18px;
+  --t-h2: 22px;
+  --t-h1: 32px;
+  --t-display: 36px;
+  --t-masthead: 38px;
+  --t-num: 13px;
+  --t-num-lg: 22px;
+  --t-num-xl: 44px;
+
+  --lh-tight: 1;
+  --lh-head: 1.22;
+  --lh-title: 1.45;
+  --lh-ui: 1.6;
+  --lh-read: 1.8;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-heavy: 900;
+
+  --ls-head: 0.01em;
+  --ls-brand: 0.04em;
+  --measure: 62ch;
+
+  /* ============================ 间距（4px 基） ============================ */
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 10px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 16px;
+  --s-9: 18px;
+  --s-10: 20px;
+  --s-11: 24px;
+  --s-12: 28px;
+  --s-13: 32px;
+  --s-14: 36px;
+  --s-15: 40px;
+  --s-16: 48px;
+
+  /* ============================ 栅格 ============================ */
+  --grid-cols: 12;
+  --grid-max: 1200px;
+  --page-x: 40px;
+  --col-gap: 32px;
+  --bar-h: 52px;
+  --folio-w: 780px;
+  --folio-side: 248px;
+  --toc-w: 184px;
+
+  /* ============================ 圆角 ============================ */
+  --r-0: 0;
+  --r-check: 2px;
+  --r-tag: 3px;
+  --r-ctl: 4px;
+  --r-dialog: 6px;
+  --r-round: 50%;
+
+  /* ============================ 线与阴影 ============================ */
+  --e-rule: 1px solid var(--c-rule);
+  --e-rule-strong: 2px solid var(--c-rule-strong);
+  --e-double-top: 3px solid var(--c-rule-strong);
+  --e-double-bottom: 1px solid var(--c-rule-strong);
+  --e-field: 1px solid var(--c-field);
+  --e-drawer: -24px 0 56px oklch(0.22 0.02 265 / 0.14);
+  --e-pop: 0 10px 30px oklch(0.22 0.02 265 / 0.14), 0 1px 3px oklch(0.22 0.02 265 / 0.10);
+  --e-focus: 0 0 0 2px var(--c-bg), 0 0 0 4px oklch(0.49 0.10 258 / 0.55);
+
+  /* ============================ 动效 ============================ */
+  --d-press: 100ms;
+  --d-hover: 160ms;
+  --d-fade: 220ms;
+  --d-panel: 260ms;
+  --d-exit: 180ms;
+  --d-live: 1800ms;
+  --d-skeleton: 1400ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+  --slide-in: 32px;
+
+  /* ============================ 层级 ============================ */
+  --z-sticky: 200;
+  --z-menu: 250;
+  --z-scrim: 300;
+  --z-folio: 310;
+  --z-dialog: 350;
+  --z-toast: 400;
+  --z-tooltip: 500;
+
+  color-scheme: light;
+}
+
+/* ============================ 颜色 · 深色（夜班） ============================ */
+:root[data-theme='dark'] {
+  --c-bg: oklch(0.215 0.02 265);
+  --c-surface: oklch(0.245 0.022 265);
+  --c-sunk: oklch(0.19 0.018 265);
+  --c-sunk-2: oklch(0.27 0.022 265);
+  --c-scrim: oklch(0.1 0.02 265 / 0.55);
+  --c-text: oklch(0.94 0.008 265);
+  --c-text-2: oklch(0.79 0.014 265);
+  --c-text-3: oklch(0.65 0.018 265);
+  --c-text-disabled: oklch(0.48 0.02 265);
+  --c-rule: oklch(0.34 0.02 265);
+  --c-rule-strong: oklch(0.74 0.012 265);
+  --c-field: oklch(0.53 0.02 265);
+  --c-field-hover: oklch(0.66 0.02 265);
+  --c-primary-hover: oklch(0.86 0.01 265);
+  --c-accent: oklch(0.74 0.10 258);
+  --c-accent-fill: oklch(0.538 0.095 258);
+  --c-accent-soft: oklch(0.30 0.05 258);
+  --c-gold: oklch(0.78 0.14 73);
+  --c-gold-text: oklch(0.80 0.13 73);
+  --c-gold-soft: oklch(0.78 0.14 73 / 0.14);
+  --c-success: oklch(0.72 0.13 152);
+  --c-success-soft: oklch(0.72 0.13 152 / 0.12);
+  --c-warn: oklch(0.74 0.15 52);
+  --c-warn-soft: oklch(0.74 0.15 52 / 0.12);
+  --c-danger: oklch(0.70 0.16 28);
+  --c-danger-soft: oklch(0.70 0.16 28 / 0.12);
+  --c-score-5: oklch(0.88 0.15 82);
+  --c-score-3: oklch(0.70 0.08 76);
+  --c-score-2: oklch(0.50 0.015 265);
+  --c-score-1: oklch(0.60 0.11 28);
+  --e-drawer: -24px 0 56px oklch(0 0 0 / 0.45);
+  --e-pop: 0 12px 34px oklch(0 0 0 / 0.45), 0 0 0 1px var(--c-rule);
+  --e-focus: 0 0 0 2px var(--c-bg), 0 0 0 4px oklch(0.74 0.10 258 / 0.6);
+  color-scheme: dark;
+}
+
+/* 跟随系统：与上块同值 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --c-bg: oklch(0.215 0.02 265);
+    --c-surface: oklch(0.245 0.022 265);
+    --c-sunk: oklch(0.19 0.018 265);
+    --c-sunk-2: oklch(0.27 0.022 265);
+    --c-scrim: oklch(0.1 0.02 265 / 0.55);
+    --c-text: oklch(0.94 0.008 265);
+    --c-text-2: oklch(0.79 0.014 265);
+    --c-text-3: oklch(0.65 0.018 265);
+    --c-text-disabled: oklch(0.48 0.02 265);
+    --c-rule: oklch(0.34 0.02 265);
+    --c-rule-strong: oklch(0.74 0.012 265);
+    --c-field: oklch(0.53 0.02 265);
+    --c-field-hover: oklch(0.66 0.02 265);
+    --c-primary-hover: oklch(0.86 0.01 265);
+    --c-accent: oklch(0.74 0.10 258);
+    --c-accent-fill: oklch(0.538 0.095 258);
+    --c-accent-soft: oklch(0.30 0.05 258);
+    --c-gold: oklch(0.78 0.14 73);
+    --c-gold-text: oklch(0.80 0.13 73);
+    --c-gold-soft: oklch(0.78 0.14 73 / 0.14);
+    --c-success: oklch(0.72 0.13 152);
+    --c-success-soft: oklch(0.72 0.13 152 / 0.12);
+    --c-warn: oklch(0.74 0.15 52);
+    --c-warn-soft: oklch(0.74 0.15 52 / 0.12);
+    --c-danger: oklch(0.70 0.16 28);
+    --c-danger-soft: oklch(0.70 0.16 28 / 0.12);
+    --c-score-5: oklch(0.88 0.15 82);
+    --c-score-3: oklch(0.70 0.08 76);
+    --c-score-2: oklch(0.50 0.015 265);
+    --c-score-1: oklch(0.60 0.11 28);
+    --e-drawer: -24px 0 56px oklch(0 0 0 / 0.45);
+    --e-pop: 0 12px 34px oklch(0 0 0 / 0.45), 0 0 0 1px var(--c-rule);
+    --e-focus: 0 0 0 2px var(--c-bg), 0 0 0 4px oklch(0.74 0.10 258 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+/* ============================ 断点 ============================ */
+@media (max-width: 1279px) {
+  :root {
+    --page-x: 28px;
+    --col-gap: 24px;
+    --folio-w: min(780px, calc(100vw - 240px));
+    --t-masthead: 34px;
+    --t-display: 32px;
+  }
+}
+@media (max-height: 760px) {
+  :root {
+    --t-masthead: 32px;
+    --t-display: 30px;
+    --t-num-xl: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-press: 0ms;
+    --d-hover: 0ms;
+    --d-fade: 0ms;
+    --d-panel: 0ms;
+    --d-exit: 0ms;
+    --d-live: 0ms;
+    --d-skeleton: 0ms;
+    --slide-in: 0px;
+  }
+}

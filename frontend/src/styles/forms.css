@@ -1,0 +1,260 @@
+/* 表单控件与左右两栏版面：委托台、办案记录共用（只引用 tokens.css 的令牌） */
+
+/* ---------- 左右两栏：左边是主线（对话 / 时间线），右边是表单（委托单 / 办案控制） ---------- */
+.run-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  margin-top: var(--s-10);
+}
+.run-left {
+  padding-right: calc(var(--col-gap) + 4px);
+  min-width: 0;
+}
+.run-right {
+  border-left: var(--e-rule);
+  padding-left: var(--col-gap);
+  min-width: 0;
+}
+.form-h h3 {
+  font: var(--fw-heavy) var(--t-h2) / 1.2 var(--font-head);
+}
+.form-h p {
+  font-size: var(--t-body-sm);
+  color: var(--c-text-3);
+  margin-top: var(--s-3);
+}
+.fieldset {
+  padding: var(--s-8) 0;
+  border-bottom: var(--e-rule);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-6);
+  flex-wrap: wrap;
+}
+.row .sp {
+  flex: 1;
+}
+.mt-s {
+  margin-top: var(--s-3);
+}
+.mt-m {
+  margin-top: var(--s-4);
+}
+
+/* ---------- 字段 ---------- */
+.flabel {
+  font-size: var(--t-body-sm);
+  font-weight: var(--fw-semibold);
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+.flabel .num,
+.flabel .muted {
+  font-weight: var(--fw-regular);
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+.flabel .r {
+  margin-left: auto;
+  font-weight: var(--fw-regular);
+  font-size: var(--t-meta);
+}
+.ta {
+  display: block;
+  width: 100%;
+  border: var(--e-field);
+  border-radius: var(--r-ctl);
+  padding: 7px var(--s-5);
+  font-size: var(--t-body-sm);
+  line-height: 1.7;
+  color: var(--c-text);
+  background: var(--c-bg);
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color var(--d-hover) var(--ease-out),
+    box-shadow var(--d-hover) var(--ease-out);
+}
+.ta:hover {
+  border-color: var(--c-field-hover);
+}
+.ta:focus {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 1px var(--c-accent);
+}
+.ta::placeholder {
+  color: var(--c-text-3);
+}
+.ta:disabled {
+  border-style: dashed;
+  color: var(--c-text-disabled);
+  background: none;
+  resize: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 28px;
+  padding: 0 var(--s-5);
+  border: var(--e-field);
+  border-radius: var(--r-ctl);
+  font-size: var(--t-body-sm);
+  color: var(--c-text-2);
+}
+.chip .x {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: -4px;
+  border-radius: var(--r-tag);
+  color: var(--c-text-3);
+}
+.chip .x:hover {
+  background: var(--c-sunk-2);
+  color: var(--c-danger);
+}
+
+/* 开关：轨道 + 文字，开 = 墨色 */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-5);
+  font-size: 13.5px;
+}
+.switch i.trk {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 17px;
+  border-radius: 9px;
+  background: var(--c-field);
+  transition: background var(--d-hover) var(--ease-out);
+}
+.switch i.trk::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: var(--r-round);
+  background: var(--c-bg);
+  transition: transform var(--d-hover) var(--ease-out);
+}
+.switch.on i.trk {
+  background: var(--c-text);
+}
+.switch.on i.trk::after {
+  transform: translateX(13px);
+}
+
+/* 步进器：自定义轮数 */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: var(--e-field);
+  border-radius: var(--r-ctl);
+}
+.stepper button {
+  width: 30px;
+  height: 28px;
+  color: var(--c-text-2);
+  display: grid;
+  place-items: center;
+}
+.stepper button:hover {
+  color: var(--c-text);
+  background: var(--c-sunk);
+}
+.stepper button:disabled {
+  color: var(--c-text-disabled);
+  background: none;
+  cursor: not-allowed;
+}
+.stepper span {
+  min-width: 40px;
+  text-align: center;
+  font: var(--fw-medium) var(--t-body-sm) var(--font-num);
+  border-left: var(--e-rule);
+  border-right: var(--e-rule);
+  line-height: 28px;
+}
+.seg.lg button {
+  height: 30px;
+  padding: 0 var(--s-6);
+  font-size: var(--t-body-sm);
+}
+.select {
+  height: 30px;
+  max-width: 100%;
+  padding: 0 var(--s-4);
+  border: var(--e-field);
+  border-radius: var(--r-ctl);
+  background: var(--c-bg);
+  font-size: var(--t-meta);
+  color: var(--c-text);
+}
+.btn--primary:disabled {
+  background: var(--c-sunk-2);
+  border-color: var(--c-sunk-2);
+  color: var(--c-text-disabled);
+}
+
+/* ---------- 运行状态（颜色 + 文字双通道） ---------- */
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--t-meta);
+  color: var(--c-run-running);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+.state::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-round);
+  background: currentColor;
+  animation: a-live var(--d-live) var(--ease-out) infinite;
+}
+.state.paused {
+  color: var(--c-run-paused);
+}
+.state.paused::before {
+  animation: none;
+}
+
+/* 等宽代码块：原始日志 */
+.code {
+  margin-top: var(--s-3);
+  padding: var(--s-6) var(--s-7);
+  background: var(--c-sunk);
+  border-radius: var(--r-ctl);
+  font: 12px/1.7 var(--font-num);
+  color: var(--c-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+@media (max-width: 960px) {
+  .run-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .run-left {
+    padding-right: 0;
+  }
+  .run-right {
+    border-left: 0;
+    padding-left: 0;
+    margin-top: var(--s-12);
+    padding-top: var(--s-8);
+    border-top: var(--e-rule-strong);
+  }
+}
